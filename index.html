@@ -1,2842 +1,1628 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="id">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sistem Order Sparepart Elektronik</title>
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
-        :root {
-            --primary-color: #2563eb;
-            --secondary-color: #1e40af;
-            --success-color: #10b981;
-            --danger-color: #ef4444;
-            --warning-color: #f59e0b;
-            --dark-color: #1f2937;
-            --light-color: #f3f4f6;
-            --sidebar-width: 280px;
-            --sidebar-width-mobile: 240px;
-            --header-height: 70px;
-            --header-height-mobile: 60px;
-            --base-font-size: 9pt;
-            --base-font-size-mobile: 8pt;
-            --red-color: #b91c1c;
-        }
-
-        body {
-            font-family: 'Roboto', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background-color: var(--light-color);
-            color: var(--dark-color);
-            line-height: 1.6;
-            font-size: var(--base-font-size);
-            font-weight: 400;
-            letter-spacing: 0.01em;
-        }
-
-        /* Layout Container */
-        .app-container {
-            display: flex;
-            min-height: 100vh;
-            position: relative;
-        }
-
-        /* Sidebar Dashboard */
-        .sidebar {
-            width: var(--sidebar-width);
-            background-color: var(--red-color);
-            color: white;
-            position: fixed;
-            height: 100vh;
-            overflow-y: auto;
-            transition: transform 0.3s ease, width 0.3s ease;
-            z-index: 1000;
-        }
-
-        .sidebar-header {
-            padding: 15px;
-            background-color: rgba(0, 0, 0, 0.2);
-            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-        }
-
-        .sidebar-header h2 {
-            font-size: 11pt;
-            font-weight: 500;
-            letter-spacing: 0.02em;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            white-space: nowrap;
-        }
-
-        .sidebar-header h2 i {
-            color: #ffffff;
-        }
-
-        .sidebar-close {
-            display: none;
-            background: none;
-            border: none;
-            color: white;
-            font-size: 14pt;
-            cursor: pointer;
-        }
-
-        .sidebar-menu {
-            padding: 15px 0;
-        }
-
-        .menu-item {
-            display: block;
-            padding: 12px 15px;
-            color: rgba(255, 255, 255, 0.9);
-            text-decoration: none;
-            transition: all 0.3s ease;
-            border-left: 3px solid transparent;
-            font-size: var(--base-font-size);
-            font-weight: 400;
-            letter-spacing: 0.01em;
-            white-space: nowrap;
-        }
-
-        .menu-item:hover {
-            background-color: rgba(255, 255, 255, 0.1);
-            color: white;
-            border-left-color: var(--primary-color);
-        }
-
-        .menu-item.active {
-            background-color: rgba(37, 99, 235, 0.2);
-            color: white;
-            border-left-color: var(--primary-color);
-            font-weight: 500;
-        }
-
-        .menu-item i {
-            margin-right: 10px;
-            width: 16px;
-            text-align: center;
-        }
-
-        /* Main Content */
-        .main-content {
-            flex: 1;
-            margin-left: var(--sidebar-width);
-            display: flex;
-            flex-direction: column;
-            transition: margin-left 0.3s ease;
-        }
-
-        /* Header */
-        .header {
-            height: var(--header-height);
-            background-color: #000000;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            padding: 0 20px;
-            position: sticky;
-            top: 0;
-            z-index: 100;
-        }
-
-        .header-left {
-            display: flex;
-            align-items: center;
-            gap: 15px;
-        }
-
-        .menu-toggle {
-            display: none;
-            background: none;
-            border: none;
-            font-size: 14pt;
-            color: #ffffff;
-            cursor: pointer;
-        }
-
-        .header-title {
-            font-size: 12pt;
-            font-weight: 500;
-            color: #ffffff;
-            letter-spacing: 0.02em;
-            white-space: nowrap;
-        }
-
-        .header-right {
-            display: flex;
-            align-items: center;
-            gap: 15px;
-        }
-
-        .user-info {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-
-        .user-info span {
-            color: #ffffff;
-            font-weight: 400;
-            letter-spacing: 0.01em;
-        }
-
-        .user-avatar {
-            width: 32px;
-            height: 32px;
-            border-radius: 50%;
-            background-color: var(--primary-color);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: white;
-            font-weight: 500;
-            font-size: var(--base-font-size);
-        }
-
-        /* Content Area */
-        .content {
-            flex: 1;
-            padding: 20px;
-            overflow-y: auto;
-        }
-
-        /* Page Sections */
-        .page-section {
-            display: none;
-        }
-
-        .page-section.active {
-            display: block;
-        }
-
-        /* Cards */
-        .stats-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-            gap: 15px;
-            margin-bottom: 20px;
-        }
-
-        .stat-card {
-            background-color: white;
-            padding: 15px;
-            border-radius: 8px;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-            transition: transform 0.3s ease, box-shadow 0.3s ease;
-        }
-
-        .stat-card:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
-        }
-
-        .stat-card-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 10px;
-        }
-
-        .stat-card-title {
-            font-size: 8pt;
-            color: #6b7280;
-            text-transform: uppercase;
-            letter-spacing: 0.05em;
-            font-weight: 500;
-            white-space: nowrap;
-        }
-
-        .stat-card-icon {
-            width: 40px;
-            height: 40px;
-            border-radius: 8px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 14pt;
-        }
-
-        .stat-card-value {
-            font-size: 16pt;
-            font-weight: 500;
-            color: var(--dark-color);
-            letter-spacing: 0.01em;
-        }
-
-        .stat-card-change {
-            font-size: 8pt;
-            margin-top: 5px;
-            letter-spacing: 0.01em;
-        }
-
-        .stat-card-change.positive {
-            color: var(--success-color);
-        }
-
-        .stat-card-change.negative {
-            color: var(--danger-color);
-        }
-
-        /* Form Section */
-        .form-section {
-            background-color: white;
-            padding: 20px;
-            border-radius: 8px;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-            margin-bottom: 20px;
-        }
-
-        .section-title {
-            font-size: 11pt;
-            font-weight: 500;
-            margin-bottom: 15px;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            letter-spacing: 0.02em;
-        }
-
-        .form-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 15px;
-        }
-
-        .form-group {
-            display: flex;
-            flex-direction: column;
-        }
-
-        .form-group.full-width {
-            grid-column: 1 / -1;
-        }
-
-        .form-label {
-            font-weight: 500;
-            margin-bottom: 5px;
-            color: #374151;
-            font-size: var(--base-font-size);
-            letter-spacing: 0.01em;
-        }
-
-        .form-input, .form-select, .form-textarea {
-            padding: 8px 12px;
-            border: 1px solid #d1d5db;
-            border-radius: 4px;
-            font-size: var(--base-font-size);
-            font-family: 'Roboto', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            transition: border-color 0.3s ease, box-shadow 0.3s ease;
-            letter-spacing: 0.01em;
-        }
-
-        .form-input:focus, .form-select:focus, .form-textarea:focus {
-            outline: none;
-            border-color: var(--primary-color);
-            box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.1);
-        }
-
-        .form-textarea {
-            resize: vertical;
-            min-height: 60px;
-        }
-
-        /* Status Badge */
-        .status-badge {
-            display: inline-block;
-            padding: 3px 10px;
-            border-radius: 12px;
-            font-size: 8pt;
-            font-weight: 500;
-            text-transform: uppercase;
-            letter-spacing: 0.02em;
-            white-space: nowrap;
-        }
-
-        .status-open {
-            background-color: #fef3c7;
-            color: #92400e;
-        }
-
-        .status-ready {
-            background-color: #dbeafe;
-            color: #1e40af;
-        }
-
-        .status-finish {
-            background-color: #d1fae5;
-            color: #065f46;
-        }
-
-        .status-proses {
-            background-color: #e9d5ff;
-            color: #6b21a8;
-        }
-
-        .status-teknis {
-            background-color: #fed7aa;
-            color: #7c2d12;
-        }
-
-        /* Buttons */
-        .btn {
-            padding: 8px 14px;
-            border: none;
-            border-radius: 4px;
-            font-size: var(--base-font-size);
-            font-weight: 500;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            display: inline-flex;
-            align-items: center;
-            gap: 6px;
-            letter-spacing: 0.01em;
-            white-space: nowrap;
-        }
-
-        .btn-primary {
-            background-color: var(--primary-color);
-            color: white;
-        }
-
-        .btn-primary:hover {
-            background-color: var(--secondary-color);
-            transform: translateY(-1px);
-            box-shadow: 0 2px 4px rgba(37, 99, 235, 0.3);
-        }
-
-        .btn-success {
-            background-color: var(--success-color);
-            color: white;
-        }
-
-        .btn-success:hover {
-            background-color: #059669;
-        }
-
-        .btn-danger {
-            background-color: var(--danger-color);
-            color: white;
-        }
-
-        .btn-danger:hover {
-            background-color: #dc2626;
-        }
-
-        .btn-secondary {
-            background-color: #6b7280;
-            color: white;
-        }
-
-        .btn-secondary:hover {
-            background-color: #4b5563;
-        }
-
-        .btn-excel {
-            background-color: #10b981;
-            color: white;
-        }
-
-        .btn-excel:hover {
-            background-color: #059669;
-        }
-
-        .btn-group {
-            display: flex;
-            gap: 8px;
-            margin-top: 15px;
-        }
-
-        /* Table Section */
-        .table-section {
-            background-color: white;
-            padding: 20px;
-            border-radius: 8px;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-        }
-
-        .table-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 15px;
-            flex-wrap: wrap;
-            gap: 10px;
-        }
-
-        .table-actions {
-            display: flex;
-            gap: 10px;
-            align-items: center;
-            flex-wrap: wrap;
-        }
-
-        .search-box {
-            position: relative;
-            width: 250px;
-        }
-
-        .search-box input {
-            width: 100%;
-            padding: 8px 12px 8px 35px;
-            border: 1px solid #d1d5db;
-            border-radius: 4px;
-            font-size: var(--base-font-size);
-            font-family: 'Roboto', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            letter-spacing: 0.01em;
-        }
-
-        .search-box i {
-            position: absolute;
-            left: 12px;
-            top: 50%;
-            transform: translateY(-50%);
-            color: #6b7280;
-            font-size: var(--base-font-size);
-        }
-
-        .filter-box {
-            display: flex;
-            gap: 10px;
-            align-items: center;
-            flex-wrap: wrap;
-        }
-
-        .filter-select {
-            padding: 8px 12px;
-            border: 1px solid #d1d5db;
-            border-radius: 4px;
-            font-size: var(--base-font-size);
-            background-color: white;
-        }
-
-        .table-wrapper {
-            overflow-x: auto;
-            -webkit-overflow-scrolling: touch;
-        }
-
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            font-size: var(--base-font-size);
-            font-family: 'Roboto', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            letter-spacing: 0.01em;
-        }
-
-        th, td {
-            padding: 8px 12px;
-            text-align: left;
-            border-bottom: 1px solid #e5e7eb;
-            white-space: nowrap;
-        }
-
-        th {
-            background-color: #f9fafb;
-            font-weight: 500;
-            color: #374151;
-            position: sticky;
-            top: 0;
-            font-size: var(--base-font-size);
-            letter-spacing: 0.02em;
-            text-transform: uppercase;
-        }
-
-        tr:hover {
-            background-color: #f9fafb;
-        }
-
-        .action-buttons {
-            display: flex;
-            gap: 5px;
-        }
-
-        .action-btn {
-            padding: 5px 8px;
-            border: none;
-            border-radius: 3px;
-            cursor: pointer;
-            font-size: 8pt;
-            transition: all 0.3s ease;
-            white-space: nowrap;
-        }
-
-        .action-btn.edit {
-            background-color: #3b82f6;
-            color: white;
-        }
-
-        .action-btn.edit:hover {
-            background-color: #2563eb;
-        }
-
-        .action-btn.delete {
-            background-color: #ef4444;
-            color: white;
-        }
-
-        .action-btn.delete:hover {
-            background-color: #dc2626;
-        }
-
-        /* Modal */
-        .modal {
-            display: none;
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background-color: rgba(0, 0, 0, 0.5);
-            z-index: 2000;
-            align-items: center;
-            justify-content: center;
-            padding: 15px;
-        }
-
-        .modal.active {
-            display: flex;
-        }
-
-        .modal-content {
-            background-color: white;
-            padding: 25px;
-            border-radius: 8px;
-            max-width: 100%;
-            width: 100%;
-            max-height: 90vh;
-            overflow-y: auto;
-            animation: modalSlideIn 0.3s ease;
-        }
-
-        @keyframes modalSlideIn {
-            from {
-                transform: translateY(-50px);
-                opacity: 0;
-            }
-            to {
-                transform: translateY(0);
-                opacity: 1;
-            }
-        }
-
-        .modal-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 20px;
-        }
-
-        .modal-title {
-            font-size: 12pt;
-            font-weight: 500;
-            letter-spacing: 0.02em;
-        }
-
-        .modal-close {
-            background: none;
-            border: none;
-            font-size: 14pt;
-            cursor: pointer;
-            color: #6b7280;
-        }
-
-        .modal-close:hover {
-            color: var(--danger-color);
-        }
-
-        /* Hide form group for teknisi */
-        .hide-for-teknisi {
-            display: none;
-        }
-
-        /* Toast Notification */
-        .toast {
-            position: fixed;
-            bottom: 20px;
-            right: 20px;
-            padding: 12px 18px;
-            border-radius: 4px;
-            color: white;
-            font-weight: 500;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
-            transform: translateX(400px);
-            transition: transform 0.3s ease;
-            z-index: 3000;
-            font-size: var(--base-font-size);
-            letter-spacing: 0.01em;
-            max-width: 90%;
-        }
-
-        .toast.show {
-            transform: translateX(0);
-        }
-
-        .toast.success {
-            background-color: var(--success-color);
-        }
-
-        .toast.error {
-            background-color: var(--danger-color);
-        }
-
-        .toast.info {
-            background-color: var(--primary-color);
-        }
-
-        /* Loading Indicator */
-        .loading {
-            display: inline-block;
-            width: 20px;
-            height: 20px;
-            border: 3px solid rgba(255,255,255,.3);
-            border-radius: 50%;
-            border-top-color: #fff;
-            animation: spin 1s ease-in-out infinite;
-        }
-
-        @keyframes spin {
-            to { transform: rotate(360deg); }
-        }
-
-        /* Overlay untuk mobile */
-        .sidebar-overlay {
-            display: none;
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background-color: rgba(0, 0, 0, 0.5);
-            z-index: 999;
-        }
-
-        /* History Page Styles */
-        .history-filters {
-            display: flex;
-            gap: 15px;
-            margin-bottom: 20px;
-            flex-wrap: wrap;
-        }
-
-        .history-filter-group {
-            display: flex;
-            flex-direction: column;
-            min-width: 150px;
-        }
-
-        .history-summary {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 15px;
-            margin-bottom: 20px;
-        }
-
-        .summary-card {
-            background-color: white;
-            padding: 15px;
-            border-radius: 8px;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-            text-align: center;
-        }
-
-        .summary-value {
-            font-size: 20pt;
-            font-weight: 700;
-            color: var(--primary-color);
-            margin: 10px 0;
-        }
-
-        .summary-label {
-            font-size: 9pt;
-            color: #6b7280;
-            text-transform: uppercase;
-            letter-spacing: 0.05em;
-        }
-
-        /* Responsive Design */
-        @media (max-width: 1200px) {
-            .stats-grid {
-                grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
-            }
-            
-            .form-grid {
-                grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-            }
-        }
-
-        @media (max-width: 992px) {
-            .stats-grid {
-                grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
-            }
-            
-            .form-grid {
-                grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
-            }
-            
-            .search-box {
-                width: 200px;
-            }
-        }
-
-        @media (max-width: 768px) {
-            :root {
-                --base-font-size: var(--base-font-size-mobile);
-                --header-height: var(--header-height-mobile);
-            }
-            
-            .sidebar {
-                width: var(--sidebar-width-mobile);
-                transform: translateX(-100%);
-            }
-
-            .sidebar.active {
-                transform: translateX(0);
-            }
-            
-            .sidebar-overlay.active {
-                display: block;
-            }
-
-            .sidebar-close {
-                display: block;
-            }
-
-            .main-content {
-                margin-left: 0;
-                width: 100%;
-            }
-
-            .menu-toggle {
-                display: block;
-            }
-
-            .content {
-                padding: 15px;
-            }
-            
-            .stats-grid {
-                grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-                gap: 10px;
-            }
-            
-            .stat-card {
-                padding: 12px;
-            }
-            
-            .stat-card-value {
-                font-size: 14pt;
-            }
-
-            .form-section, .table-section {
-                padding: 15px;
-            }
-            
-            .form-grid {
-                grid-template-columns: 1fr;
-                gap: 12px;
-            }
-
-            .table-header {
-                flex-direction: column;
-                align-items: stretch;
-            }
-
-            .table-actions {
-                justify-content: space-between;
-                width: 100%;
-            }
-
-            .search-box, .filter-box {
-                width: 100%;
-            }
-            
-            .filter-box {
-                justify-content: space-between;
-            }
-            
-            .filter-select {
-                flex: 1;
-                margin-right: 10px;
-            }
-
-            .table-wrapper {
-                overflow-x: scroll;
-            }
-
-            table {
-                min-width: 800px;
-            }
-            
-            .btn-group {
-                flex-direction: column;
-            }
-            
-            .btn {
-                width: 100%;
-                justify-content: center;
-            }
-            
-            .modal-content {
-                padding: 20px;
-            }
-
-            .history-filters {
-                flex-direction: column;
-            }
-            
-            .history-filter-group {
-                width: 100%;
-            }
-        }
-
-        @media (max-width: 576px) {
-            .content {
-                padding: 10px;
-            }
-            
-            .stats-grid {
-                grid-template-columns: 1fr 1fr;
-            }
-            
-            .form-section, .table-section {
-                padding: 12px;
-            }
-            
-            .table-actions {
-                flex-direction: column;
-                gap: 10px;
-            }
-            
-            .search-box, .filter-box {
-                width: 100%;
-            }
-            
-            .filter-box {
-                flex-direction: column;
-            }
-            
-            .filter-select {
-                width: 100%;
-                margin-right: 0;
-            }
-            
-            .header {
-                padding: 0 15px;
-            }
-            
-            .header-title {
-                font-size: 10pt;
-            }
-            
-            .user-info span {
-                display: none;
-            }
-            
-            .modal-content {
-                padding: 15px;
-            }
-        }
-
-        @media (max-width: 400px) {
-            .stats-grid {
-                grid-template-columns: 1fr;
-            }
-            
-            .sidebar {
-                width: 100%;
-            }
-            
-            .sidebar-header h2 {
-                font-size: 10pt;
-            }
-            
-            .menu-item {
-                padding: 10px 15px;
-            }
-        }
-
-        /* Orientasi landscape untuk mobile */
-        @media (max-height: 500px) and (orientation: landscape) {
-            .sidebar {
-                overflow-y: auto;
-            }
-            
-            .content {
-                padding: 10px;
-            }
-            
-            .stats-grid {
-                grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
-            }
-        }
-    </style>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>DASHBOARD - Districk KUPANG</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+  <style>
+    body { 
+      margin:0; 
+      font-family:Arial, sans-serif; 
+      background:#f4f6f9;
+      padding-top: 80px; /* Memberi ruang untuk header fixed */
+    }
+    header {
+      background:#c60000; 
+      color:#fff; 
+      padding:15px 20px;
+      text-align:center; 
+      font-size:20px; 
+      font-weight:bold;
+      display:flex; 
+      align-items:center; 
+      justify-content:space-between; /* Mengubah justify-content */
+      position: fixed; /* Membuat header tetap di atas */
+      top: 0;
+      left: 0;
+      right: 0;
+      z-index: 1000; /* Memastikan header di atas elemen lain */
+      box-shadow: 0 2px 10px rgba(0,0,0,0.2); /* Menambahkan bayangan untuk efek floating */
+    }
+    .header-left {
+      display: flex;
+      align-items: center;
+    }
+    header img { 
+      height:50px; 
+      border-radius:6px; 
+      margin-right: 15px; /* Menambah jarak antara logo dan judul */
+    }
+    .header-title {
+      flex-grow: 1; /* Memungkinkan judul tetap di tengah */
+    }
+    .header-right {
+      width: 65px; /* Menyeimbangkan dengan ukuran logo */
+    }
+    .sidebar {
+      position:fixed; 
+      top:80px; /* Menyesuaikan posisi sidebar di bawah header fixed */
+      left:0; 
+      width:220px; 
+      height:calc(100% - 80px); /* Menyesuaikan tinggi sidebar */
+      background:#000000; 
+      padding-top:20px; /* Mengurangi padding atas */
+      overflow-y: auto; /* Menambahkan scroll jika konten sidebar terlalu panjang */
+    }
+    .sidebar a {
+      display:block; 
+      color:#fff; 
+      padding:12px 20px;
+      text-decoration:none; 
+      font-size:16px;
+      transition: all 0.3s ease; /* Menambahkan transisi untuk efek hover */
+    }
+    .sidebar a:hover { 
+      background:#1abc9c; 
+      padding-left: 25px; /* Efek geser saat hover */
+    }
+    .sidebar a i {
+      margin-right: 10px; /* Memberi jarak antara icon dan teks */
+      width: 20px; /* Menjaga alignment icon */
+      text-align: center;
+    }
+    .content { 
+      margin-left:220px; 
+      padding:20px; 
+    }
+    .card {
+      background:#fff; 
+      padding:20px; 
+      margin-bottom:20px;
+      border-radius:8px; 
+      box-shadow:0 2px 5px rgba(0,0,0,0.1);
+      transition: transform 0.3s ease; /* Efek hover pada card */
+    }
+    .card:hover {
+      transform: translateY(-5px); /* Efek mengangkat card saat hover */
+      box-shadow: 0 5px 15px rgba(0,0,0,0.2); /* Bayangan lebih besar saat hover */
+    }
+    h2 {
+      color: #c60000; /* Warna judul sesuai tema */
+      border-bottom: 2px solid #c60000; /* Garis bawah judul */
+      padding-bottom: 10px;
+      margin-bottom: 20px;
+    }
+    h3 {
+      color: #333;
+      margin-top: 20px;
+      margin-bottom: 10px;
+    }
+    .settings-section {
+      margin-bottom: 25px;
+      padding: 15px;
+      background: #f8f9fa;
+      border-radius: 8px;
+      border-left: 4px solid #c60000;
+    }
+    .settings-section h3 {
+      margin-top: 0;
+      color: #c60000;
+    }
+    .table-wrapper {
+      margin-top: 15px;
+    }
+    .tools-container {
+      position: sticky;
+      top: 0;
+      background: #fff;
+      z-index: 20;
+      padding-bottom: 10px;
+      border-bottom: 1px solid #eee;
+    }
+    .table-container {
+      max-height: 500px; /* Membatasi tinggi tabel */
+      overflow-y: auto; /* Menambahkan scroll vertikal */
+    }
+    table { 
+      width:100%; 
+      border-collapse:collapse; 
+      font-size:14px; 
+      white-space: nowrap; /* Mencegah teks wrap ke baris baru */
+    }
+    table th, table td {
+      border:1px solid #ccc; 
+      padding:8px; /* Menambah padding untuk kenyamanan membaca */
+      text-align: left; /* Default alignment ke kiri */
+    }
+    table th { 
+      background:#c60000; /* Warna header tabel sesuai gambar */
+      color:#fff; 
+      font-weight: bold;
+      position: sticky; /* Membuat header tabel tetap */
+      top: 0; /* Menempel di atas saat scroll */
+      z-index: 10; /* Memastikan header di atas baris data */
+      text-align: center; /* Header tetap rata tengah */
+    }
+    table tr:nth-child(even) { 
+      background:#f9f9f9; 
+    }
+    table tr:hover {
+      background: #e8f4fc; /* Efek hover pada baris tabel */
+    }
+    /* Perubahan untuk alignment tabel */
+    .text-center {
+      text-align: center;
+    }
+    .text-left {
+      text-align: left;
+    }
+    .tools { 
+      display:flex; 
+      gap:20px; 
+      align-items:center; 
+      flex-wrap:wrap;
+      background: #f8f9fa;
+      padding: 10px;
+      border-radius: 5px;
+    }
+    .tools label { 
+      font-weight:bold; 
+      margin-right:8px; 
+      color: #333;
+    }
+    .tools input, .tools select { 
+      padding:8px; 
+      font-size:14px;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+    }
+    .tools input:focus, .tools select:focus {
+      outline: none;
+      border-color: #c60000;
+      box-shadow: 0 0 5px rgba(198, 0, 0, 0.3);
+    }
+    .pagination { 
+      margin-top:15px; 
+      text-align:center; 
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .pagination button {
+      padding:8px 15px; 
+      margin:0 5px;
+      border:none; 
+      border-radius:4px;
+      background:#2c3e50; 
+      color:#fff; 
+      cursor:pointer;
+      transition: all 0.3s ease;
+    }
+    .pagination button:hover {
+      background: #1abc9c;
+    }
+    .pagination button:disabled { 
+      background:#aaa; 
+      cursor:not-allowed; 
+    }
+    .pagination-controls {
+      display: flex;
+      align-items: center;
+    }
+    .pagination-info {
+      flex-grow: 1;
+      text-align: center;
+    }
+    .rows-per-page {
+      display: flex;
+      align-items: center;
+    }
+    input[type="file"] {
+      padding: 8px;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      background: #f8f9fa;
+      cursor: pointer;
+    }
+    input[type="file"]:hover {
+      background: #e9ecef;
+    }
+    .dropdown-arrow {
+      position: relative;
+      display: inline-block;
+    }
+    .dropdown-arrow::after {
+      content: '\f078';
+      font-family: 'Font Awesome 6 Free';
+      font-weight: 900;
+      position: absolute;
+      right: 10px;
+      top: 50%;
+      transform: translateY(-50%);
+      pointer-events: none;
+    }
+    .status-badge {
+      display: inline-block;
+      padding: 3px 8px;
+      border-radius: 12px;
+      font-size: 12px;
+      font-weight: bold;
+    }
+    .status-pending {
+      background-color: #f39c12;
+      color: white;
+    }
+    .status-approved {
+      background-color: #27ae60;
+      color: white;
+    }
+    .status-rejected {
+      background-color: #e74c3c;
+      color: white;
+    }
+    .status-returned {
+      background-color: #3498db;
+      color: white;
+    }
+    .filter-value {
+      margin-left: 10px;
+      padding: 5px;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      width: 80px;
+    }
+    .notification {
+      position: fixed;
+      top: 90px;
+      right: 20px;
+      background: #27ae60;
+      color: white;
+      padding: 15px 20px;
+      border-radius: 5px;
+      box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+      z-index: 1001;
+      display: none;
+      animation: slideIn 0.3s ease-out;
+    }
+    @keyframes slideIn {
+      from {
+        transform: translateX(100%);
+        opacity: 0;
+      }
+      to {
+        transform: translateX(0);
+        opacity: 1;
+      }
+    }
+    .btn {
+      padding: 8px 15px;
+      background: #c60000;
+      color: white;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 14px;
+      transition: background 0.3s ease;
+    }
+    .btn:hover {
+      background: #a30000;
+    }
+    .btn-success {
+      background: #27ae60;
+    }
+    .btn-success:hover {
+      background: #219653;
+    }
+    .btn-danger {
+      background: #e74c3c;
+    }
+    .btn-danger:hover {
+      background: #c0392b;
+    }
+    .file-actions {
+      display: flex;
+      gap: 10px;
+      margin-top: 10px;
+    }
+  </style>
 </head>
 <body>
-    <div class="app-container">
-        <!-- Overlay untuk mobile -->
-        <div class="sidebar-overlay" id="sidebarOverlay"></div>
+  <header>
+    <div class="header-left">
+      <img id="logo" src="" alt="Logo">
+    </div>
+    <div class="header-title">
+      <span>DASHBOARD - Districk KUPANG</span>
+    </div>
+    <div class="header-right">
+      <!-- Ruang kosong untuk keseimbangan -->
+    </div>
+  </header>
+
+  <div class="sidebar">
+    <a href="#" onclick="showPage('master')"><i class="fas fa-cogs"></i> Master Komponen</a>
+    <a href="#" onclick="showPage('stock')"><i class="fas fa-boxes"></i> Stock Komponen</a>
+    <a href="#" onclick="showPage('reservasi')"><i class="fas fa-calendar-check"></i> Reservasi</a>
+    <a href="#" onclick="showPage('service')"><i class="fas fa-headset"></i> Service Calls</a>
+    <a href="#" onclick="showPage('settings')"><i class="fas fa-cog"></i> Pengaturan</a>
+    <a href="#" onclick="showPage('logout')"><i class="fas fa-sign-out-alt"></i> Logout</a>
+  </div>
+
+  <div class="content">
+    <!-- MASTER KOMPONEN -->
+    <div id="master" class="card">
+      <h2><i class="fas fa-cogs"></i> Master Komponen</h2>
+
+      <!-- Import Excel -->
+      <h3><i class="fas fa-file-excel"></i> Import File Excel</h3>
+      <input type="file" id="importMaster" accept=".xlsx,.xls,.csv" onchange="importMasterExcel()" />
+
+      <!-- Wrapper untuk tabel dan tools -->
+      <div class="table-wrapper">
+        <!-- Tools container yang sticky -->
+        <div class="tools-container">
+          <!-- Pencarian + Filter -->
+          <div class="tools">
+            <div>
+              <label for="searchMaster"><i class="fas fa-search"></i> Cari:</label>
+              <input type="text" id="searchMaster" placeholder="Part Number / Description" onkeyup="applyMasterFilter()" />
+            </div>
+            <div>
+              <label for="filterPart"><i class="fas fa-filter"></i> Filter Part Number:</label>
+              <select id="filterPart" onchange="applyMasterFilter()">
+                <option value="all">Semua</option>
+              </select>
+            </div>
+          </div>
+        </div>
+
+        <!-- Tabel dengan container -->
+        <div class="table-container">
+          <table id="masterTable">
+            <thead>
+              <tr>
+                <th>No.</th>
+                <th>Part Number</th>
+                <th>Description</th>
+              </tr>
+            </thead>
+            <tbody></tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Pagination -->
+      <div class="pagination">
+        <div class="pagination-controls">
+          <button id="prevMaster" onclick="prevMasterPage()"><i class="fas fa-arrow-left"></i> Back</button>
+        </div>
+        <div class="pagination-info">
+          <span id="pageInfoMaster"></span>
+        </div>
+        <div class="rows-per-page">
+          <label for="rowsPerPageMaster">Baris per halaman:</label>
+          <select id="rowsPerPageMaster" onchange="changeRowsPerPageMaster()">
+            <option value="10">10</option>
+            <option value="15" selected>15</option>
+            <option value="20">20</option>
+            <option value="25">25</option>
+            <option value="50">50</option>
+          </select>
+          <button id="nextMaster" onclick="nextMasterPage()">Next <i class="fas fa-arrow-right"></i></button>
+        </div>
+      </div>
+    </div>
+
+    <!-- STOCK SPAREPART -->
+    <div id="stock" class="card" style="display:none;">
+      <h2><i class="fas fa-boxes"></i> Data Stock Komponen</h2>
+
+      <!-- Import Excel -->
+      <h3><i class="fas fa-file-excel"></i> Import File Excel</h3>
+      <input type="file" id="importFile" accept=".xlsx,.xls,.csv" onchange="importExcel()" />
+      
+      <!-- Download Excel -->
+      <div class="file-actions">
+        <button class="btn btn-success" onclick="exportStockToExcel()">
+          <i class="fas fa-download"></i> Download Excel
+        </button>
+      </div>
+
+      <!-- Wrapper untuk tabel dan tools -->
+      <div class="table-wrapper">
+        <!-- Tools container yang sticky -->
+        <div class="tools-container">
+          <div class="tools">
+            <div>
+              <label for="filterLokasi"><i class="fas fa-filter"></i> Filter Tipe Lokasi:</label>
+              <select id="filterLokasi" onchange="applyFilter()">
+                <option value="all">Semua</option>
+              </select>
+            </div>
+            <div>
+              <label for="searchInput"><i class="fas fa-search"></i> Cari:</label>
+              <input type="text" id="searchInput" placeholder="Nama / Part / Deskripsi" onkeyup="applyFilter()" />
+            </div>
+          </div>
+        </div>
+
+        <!-- Tabel dengan container -->
+        <div class="table-container">
+          <table id="stockTable">
+            <thead>
+              <tr>
+                <th>No.</th>
+                <th>Tipe Lokasi</th>
+                <th>Nama</th>
+                <th>Part</th>
+                <th>Deskripsi Part</th>
+                <th>QTY</th>
+                <th>QTY Alloc</th>
+                <th>Available QTY</th>
+                <th>Return To Factory</th>
+              </tr>
+            </thead>
+            <tbody></tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="pagination">
+        <div class="pagination-controls">
+          <button id="prevBtn" onclick="prevPage()"><i class="fas fa-arrow-left"></i> Back</button>
+        </div>
+        <div class="pagination-info">
+          <span id="pageInfo"></span>
+        </div>
+        <div class="rows-per-page">
+          <label for="rowsPerPage">Baris per halaman:</label>
+          <select id="rowsPerPage" onchange="changeRowsPerPage()">
+            <option value="10">10</option>
+            <option value="15" selected>15</option>
+            <option value="20">20</option>
+            <option value="25">25</option>
+            <option value="50">50</option>
+          </select>
+          <button id="nextBtn" onclick="nextPage()">Next <i class="fas fa-arrow-right"></i></button>
+        </div>
+      </div>
+    </div>
+
+    <!-- RESERVASI -->
+    <div id="reservasi" class="card" style="display:none;">
+      <h2><i class="fas fa-calendar-check"></i> Reservasi Komponen</h2>
+
+      <h3><i class="fas fa-file-excel"></i> Import File Excel</h3>
+      <input type="file" id="importReservasi" accept=".xlsx,.xls,.csv" onchange="importReservasiExcel()" />
+      
+      <!-- Download Excel -->
+      <div class="file-actions">
+        <button class="btn btn-success" onclick="exportReservasiToExcel()">
+          <i class="fas fa-download"></i> Download Excel
+        </button>
+      </div>
+      
+      <!-- Wrapper untuk tabel dan tools -->
+      <div class="table-wrapper">
+        <!-- Tools container yang sticky -->
+        <div class="tools-container">
+          <!-- Pencarian + Filter -->
+          <div class="tools">
+            <div>
+              <label for="searchReservasi"><i class="fas fa-search"></i> Cari:</label>
+              <input type="text" id="searchReservasi" placeholder="Nomor / Catatan / Part" onkeyup="applyReservasiFilter()" />
+            </div>
+            <div>
+              <label for="filterTeknisi"><i class="fas fa-filter"></i> Filter Berdasarkan Teknisi Perbaikan:</label>
+              <select id="filterTeknisi" onchange="applyReservasiFilter()">
+                <option value="all">Semua</option>
+              </select>
+            </div>
+          </div>
+        </div>
+
+        <!-- Tabel dengan container -->
+        <div class="table-container">
+          <table id="reservasiTable">
+            <thead>
+              <tr>
+                <th>Nomor</th>
+                <th>Catatan</th>
+                <th>Part</th>
+                <th>Qty Reservasi</th>
+                <th>Qty Transaksi</th>
+                <th>Qty Close</th>
+                <th>Part Demand</th>
+                <th>Serial Number</th>
+                <th>Return To Factory</th>
+                <th>Teknisi Perbaikan</th>
+                <th>Analisa SA</th>
+                <th>Disetujui Pada</th>
+              </tr>
+            </thead>
+            <tbody></tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="pagination">
+        <div class="pagination-controls">
+          <button id="prevReservasi" onclick="prevReservasiPage()"><i class="fas fa-arrow-left"></i> Back</button>
+        </div>
+        <div class="pagination-info">
+          <span id="pageInfoReservasi"></span>
+        </div>
+        <div class="rows-per-page">
+          <label for="rowsPerPageReservasi">Baris per halaman:</label>
+          <select id="rowsPerPageReservasi" onchange="changeRowsPerPageReservasi()">
+            <option value="10">10</option>
+            <option value="15" selected>15</option>
+            <option value="20">20</option>
+            <option value="25">25</option>
+            <option value="50">50</option>
+          </select>
+          <button id="nextReservasi" onclick="nextReservasiPage()">Next <i class="fas fa-arrow-right"></i></button>
+        </div>
+      </div>
+    </div>
+
+    <!-- SERVICE CALLS -->
+    <div id="service" class="card" style="display:none;">
+      <h2><i class="fas fa-headset"></i> Service Calls</h2>
+
+      <h3><i class="fas fa-file-excel"></i> Import File Excel</h3>
+      <input type="file" id="importService" accept=".xlsx,.xls,.csv" onchange="importServiceExcel()" />
+      
+      <!-- Download Excel -->
+      <div class="file-actions">
+        <button class="btn btn-success" onclick="exportServiceToExcel()">
+          <i class="fas fa-download"></i> Download Excel
+        </button>
+      </div>
+      
+      <!-- Wrapper untuk tabel dan tools -->
+      <div class="table-wrapper">
+        <!-- Tools container yang sticky -->
+        <div class="tools-container">
+          <!-- Pencarian + Filter -->
+          <div class="tools">
+            <div>
+              <label for="searchService"><i class="fas fa-search"></i> Cari:</label>
+              <input type="text" id="searchService" placeholder="Nomor Service Call / Nama Pemilik" onkeyup="applyServiceFilter()" />
+            </div>
+            <div>
+              <label for="filterJenisLayanan"><i class="fas fa-filter"></i> Filter Jenis Layanan:</label>
+              <select id="filterJenisLayanan" onchange="applyServiceFilter()">
+                <option value="all">Semua</option>
+              </select>
+            </div>
+          </div>
+        </div>
+
+        <!-- Tabel dengan container -->
+        <div class="table-container">
+          <table id="serviceTable">
+            <thead>
+              <tr>
+                <th>Tanggal Pendaftaran</th>
+                <th>Nomor Service Call</th>
+                <th>Jenis Layanan</th>
+                <th>Jenis Garansi</th>
+                <th>Tipe Demand</th>
+                <th>Nomor Seri</th>
+                <th>Nama Pemilik</th>
+                <th>Alamat Pemilik</th>
+                <th>Nama Teknisi</th>
+                <th>Tanggal Serah Terima</th>
+              </tr>
+            </thead>
+            <tbody></tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="pagination">
+        <div class="pagination-controls">
+          <button id="prevService" onclick="prevServicePage()"><i class="fas fa-arrow-left"></i> Back</button>
+        </div>
+        <div class="pagination-info">
+          <span id="pageInfoService"></span>
+        </div>
+        <div class="rows-per-page">
+          <label for="rowsPerPageService">Baris per halaman:</label>
+          <select id="rowsPerPageService" onchange="changeRowsPerPageService()">
+            <option value="10">10</option>
+            <option value="15" selected>15</option>
+            <option value="20">20</option>
+            <option value="25">25</option>
+            <option value="50">50</option>
+          </select>
+          <button id="nextService" onclick="nextServicePage()">Next <i class="fas fa-arrow-right"></i></button>
+        </div>
+      </div>
+    </div>
+
+    <!-- PENGATURAN -->
+    <div id="settings" class="card" style="display:none;">
+      <h2><i class="fas fa-cog"></i> Pengaturan</h2>
+      
+      <div class="settings-section">
+        <h3><i class="fas fa-image"></i> Upload Logo</h3>
+        <input type="file" id="logoInput" accept="image/*" onchange="changeLogo()" />
+        <p>Logo yang diupload akan tampil di bagian header dashboard.</p>
+      </div>
+      
+      <div class="settings-section">
+        <h3><i class="fas fa-database"></i> Pengaturan Database</h3>
+        <p>Pengaturan koneksi dan manajemen database.</p>
+      </div>
+      
+      <div class="settings-section">
+        <h3><i class="fas fa-user-cog"></i> Pengaturan Pengguna</h3>
+        <p>Kelola pengguna, hak akses, dan izin.</p>
+      </div>
+      
+      <div class="settings-section">
+        <h3><i class="fas fa-bell"></i> Notifikasi</h3>
+        <p>Konfigurasi notifikasi dan pengingat sistem.</p>
+      </div>
+      
+      <div class="settings-section">
+        <h3><i class="fas fa-save"></i> Penyimpanan Data</h3>
+        <p>Data akan otomatis tersimpan di browser (localStorage) setiap kali ada perubahan.</p>
+        <button class="btn btn-danger" onclick="clearAllData()">Hapus Semua Data Tersimpan</button>
+      </div>
+    </div>
+
+    <!-- LOGOUT -->
+    <div id="logout" class="card" style="display:none;">
+      <h2><i class="fas fa-sign-out-alt"></i> Logout</h2>
+      <p>Anda telah keluar dari sistem.</p>
+    </div>
+  </div>
+
+  <!-- Notification -->
+  <div id="notification" class="notification"></div>
+
+  <script>
+    // ---- GLOBAL FUNCTION ----
+    function showPage(pageId) {
+      const pages = document.querySelectorAll('.card');
+      pages.forEach(p => p.style.display = "none");
+      document.getElementById(pageId).style.display = "block";
+    }
+
+    // ---- NOTIFICATION ----
+    function showNotification(message, duration = 3000) {
+      const notification = document.getElementById('notification');
+      notification.textContent = message;
+      notification.style.display = 'block';
+      
+      setTimeout(() => {
+        notification.style.display = 'none';
+      }, duration);
+    }
+
+    // ---- LOCAL STORAGE MANAGEMENT ----
+    function saveToLocalStorage(key, data) {
+      try {
+        localStorage.setItem(key, JSON.stringify(data));
+        showNotification('Data berhasil disimpan!');
+      } catch (e) {
+        console.error('Gagal menyimpan data ke localStorage:', e);
+        showNotification('Gagal menyimpan data!', 5000);
+      }
+    }
+
+    function loadFromLocalStorage(key, defaultValue = []) {
+      try {
+        const data = localStorage.getItem(key);
+        return data ? JSON.parse(data) : defaultValue;
+      } catch (e) {
+        console.error('Gagal memuat data dari localStorage:', e);
+        return defaultValue;
+      }
+    }
+
+    function clearAllData() {
+      if (confirm('Apakah Anda yakin ingin menghapus semua data tersimpan?')) {
+        localStorage.removeItem('masterData');
+        localStorage.removeItem('stockData');
+        localStorage.removeItem('reservasiData');
+        localStorage.removeItem('serviceData');
+        showNotification('Semua data berhasil dihapus!');
         
-        <!-- Sidebar Dashboard -->
-        <aside class="sidebar" id="sidebar">
-            <div class="sidebar-header">
-                <h2><i class="fas fa-microchip"></i> ORDER SPAREPART KUPANG</h2>
-                <button class="sidebar-close" id="sidebarClose">
-                    <i class="fas fa-times"></i>
-                </button>
-            </div>
-            <nav class="sidebar-menu">
-                <a href="#" class="menu-item active" data-page="dashboard">
-                    <i class="fas fa-tachometer-alt"></i> Dashboard
-                </a>
-                <a href="#" class="menu-item" data-page="order-baru">
-                    <i class="fas fa-plus-circle"></i> Order Baru
-                </a>
-                <a href="#" class="menu-item" data-page="daftar-order">
-                    <i class="fas fa-list"></i> Daftar Order
-                </a>
-                <a href="#" class="menu-item" data-page="teknisi">
-                    <i class="fas fa-user-tie"></i> Teknisi
-                </a>
-                <a href="#" class="menu-item" data-page="admin-sparepart">
-                    <i class="fas fa-tools"></i> Admin Sparepart
-                </a>
-                <a href="#" class="menu-item" data-page="pelanggan">
-                    <i class="fas fa-users"></i> Pelanggan
-                </a>
-                <a href="#" class="menu-item" data-page="history">
-                    <i class="fas fa-history"></i> History
-                </a>
-                <a href="#" class="menu-item" data-page="pengaturan">
-                    <i class="fas fa-cog"></i> Pengaturan
-                </a>
-            </nav>
-        </aside>
+        // Reset data di memori
+        masterData = [];
+        filteredMaster = [];
+        allData = [];
+        filteredStock = [];
+        reservasiData = [];
+        filteredReservasi = [];
+        serviceData = [];
+        filteredService = [];
+        
+        // Render ulang tabel
+        if (document.getElementById('master').style.display !== 'none') {
+          renderMasterTable();
+        } else if (document.getElementById('stock').style.display !== 'none') {
+          renderTable();
+        } else if (document.getElementById('reservasi').style.display !== 'none') {
+          renderReservasiTable();
+        } else if (document.getElementById('service').style.display !== 'none') {
+          renderServiceTable();
+        }
+      }
+    }
 
-        <!-- Main Content -->
-        <main class="main-content">
-            <!-- Header -->
-            <header class="header">
-                <div class="header-left">
-                    <button class="menu-toggle" id="menuToggle">
-                        <i class="fas fa-bars"></i>
-                    </button>
-                    <h1 class="header-title" id="pageTitle">Order Sparepart Elektronik</h1>
-                </div>
-                <div class="header-right">
-                    <div class="user-info">
-                        <span>Admin</span>
-                        <div class="user-avatar">A</div>
-                    </div>
-                </div>
-            </header>
+    // ---- EXPORT TO EXCEL ----
+    function exportStockToExcel() {
+      if (filteredStock.length === 0) {
+        showNotification('Tidak ada data untuk diekspor!', 5000);
+        return;
+      }
 
-            <!-- Content Area -->
-            <div class="content">
-                <!-- Dashboard Page -->
-                <div class="page-section active" id="dashboard">
-                    <!-- Statistics Cards -->
-                    <div class="stats-grid">
-                        <div class="stat-card">
-                            <div class="stat-card-header">
-                                <span class="stat-card-title">Total Order</span>
-                                <div class="stat-card-icon" style="background-color: rgba(37, 99, 235, 0.1); color: var(--primary-color);">
-                                    <i class="fas fa-shopping-cart"></i>
-                                </div>
-                            </div>
-                            <div class="stat-card-value" id="totalOrderValue">156</div>
-                            <div class="stat-card-change positive">
-                                <i class="fas fa-arrow-up"></i> 12% dari bulan lalu
-                            </div>
-                        </div>
-                        <div class="stat-card">
-                            <div class="stat-card-header">
-                                <span class="stat-card-title">Order Hari Ini</span>
-                                <div class="stat-card-icon" style="background-color: rgba(16, 185, 129, 0.1); color: var(--success-color);">
-                                    <i class="fas fa-calendar-day"></i>
-                                </div>
-                            </div>
-                            <div class="stat-card-value" id="todayOrderValue">8</div>
-                            <div class="stat-card-change positive">
-                                <i class="fas fa-arrow-up"></i> 5% dari kemarin
-                            </div>
-                        </div>
-                        <div class="stat-card">
-                            <div class="stat-card-header">
-                                <span class="stat-card-title">Pending Order</span>
-                                <div class="stat-card-icon" style="background-color: rgba(245, 158, 11, 0.1); color: var(--warning-color);">
-                                    <i class="fas fa-clock"></i>
-                                </div>
-                            </div>
-                            <div class="stat-card-value" id="pendingOrderValue">23</div>
-                            <div class="stat-card-change negative">
-                                <i class="fas fa-arrow-down"></i> 3% dari kemarin
-                            </div>
-                        </div>
-                        <div class="stat-card">
-                            <div class="stat-card-header">
-                                <span class="stat-card-title">JUMLAH OPEN</span>
-                                <div class="stat-card-icon" style="background-color: rgba(239, 68, 68, 0.1); color: var(--danger-color);">
-                                    <i class="fas fa-exclamation-circle"></i>
-                                </div>
-                            </div>
-                            <div class="stat-card-value" id="openOrderValue">0</div>
-                            <div class="stat-card-change">
-                                <i class="fas fa-minus"></i> Order status OPEN
-                            </div>
-                        </div>
-                        <div class="stat-card">
-                            <div class="stat-card-header">
-                                <span class="stat-card-title">JUMLAH READY</span>
-                                <div class="stat-card-icon" style="background-color: rgba(59, 130, 246, 0.1); color: #3b82f6;">
-                                    <i class="fas fa-check-circle"></i>
-                                </div>
-                            </div>
-                            <div class="stat-card-value" id="readyOrderValue">0</div>
-                            <div class="stat-card-change">
-                                <i class="fas fa-minus"></i> Order status READY
-                            </div>
-                        </div>
-                        <div class="stat-card">
-                            <div class="stat-card-header">
-                                <span class="stat-card-title">JUMLAH FINISH</span>
-                                <div class="stat-card-icon" style="background-color: rgba(16, 185, 129, 0.1); color: var(--success-color);">
-                                    <i class="fas fa-check-double"></i>
-                                </div>
-                            </div>
-                            <div class="stat-card-value" id="finishOrderValue">0</div>
-                            <div class="stat-card-change">
-                                <i class="fas fa-minus"></i> Order status FINISH
-                            </div>
-                        </div>
-                        <!-- Kartu untuk PROSES PEMENUHAN -->
-                        <div class="stat-card">
-                            <div class="stat-card-header">
-                                <span class="stat-card-title">PROSES PEMENUHAN</span>
-                                <div class="stat-card-icon" style="background-color: rgba(139, 92, 246, 0.1); color: #8b5cf6;">
-                                    <i class="fas fa-truck"></i>
-                                </div>
-                            </div>
-                            <div class="stat-card-value" id="prosesPemenuhanValue">0</div>
-                            <div class="stat-card-change">
-                                <i class="fas fa-minus"></i> Order dalam proses pemenuhan
-                            </div>
-                        </div>
-                        <!-- Kartu untuk TEKNIS -->
-                        <div class="stat-card">
-                            <div class="stat-card-header">
-                                <span class="stat-card-title">TEKNIS</span>
-                                <div class="stat-card-icon" style="background-color: rgba(251, 146, 60, 0.1); color: #fb923c;">
-                                    <i class="fas fa-wrench"></i>
-                                </div>
-                            </div>
-                            <div class="stat-card-value" id="teknisValue">0</div>
-                            <div class="stat-card-change">
-                                <i class="fas fa-minus"></i> Order status TEKNIS
-                            </div>
-                        </div>
-                    </div>
-                </div>
+      // Buat workbook baru
+      const wb = XLSX.utils.book_new();
+      
+      // Buat worksheet dari data
+      const ws = XLSX.utils.json_to_sheet(filteredStock.map((row, index) => {
+        return {
+          "No.": index + 1,
+          "Tipe Lokasi": row[stockIndexMap[1]] || "",
+          "Nama": row[stockIndexMap[2]] || "",
+          "Part": row[stockIndexMap[3]] || "",
+          "Deskripsi Part": row[stockIndexMap[4]] || "",
+          "QTY": row[stockIndexMap[5]] || "",
+          "QTY Alloc": row[stockIndexMap[6]] || "",
+          "Available QTY": row[stockIndexMap[7]] || "",
+          "Return To Factory": row[stockIndexMap[8]] || ""
+        };
+      }));
+      
+      // Tambahkan worksheet ke workbook
+      XLSX.utils.book_append_sheet(wb, ws, "Stock Komponen");
+      
+      // Generate nama file dengan timestamp
+      const now = new Date();
+      const timestamp = now.getFullYear() + 
+                      String(now.getMonth() + 1).padStart(2, '0') + 
+                      String(now.getDate()).padStart(2, '0') + '_' +
+                      String(now.getHours()).padStart(2, '0') + 
+                      String(now.getMinutes()).padStart(2, '0');
+      const fileName = `Data_Stock_Komponen_${timestamp}.xlsx`;
+      
+      // Download file
+      XLSX.writeFile(wb, fileName);
+      
+      showNotification('Data berhasil diekspor ke Excel!');
+    }
 
-                <!-- Teknisi Page -->
-                <div class="page-section" id="teknisi">
-                    <!-- Table Section -->
-                    <section class="table-section">
-                        <div class="table-header">
-                            <h2 class="section-title">
-                                <i class="fas fa-user-tie"></i> Data Order Teknisi
-                            </h2>
-                            <div class="table-actions">
-                                <button class="btn btn-excel" onclick="downloadTeknisiExcel()">
-                                    <i class="fas fa-file-excel"></i> Download Excel
-                                </button>
-                                <div class="filter-box">
-                                    <select class="filter-select" id="teknisiStatusFilter">
-                                        <option value="">Semua Status</option>
-                                        <option value="OPEN">OPEN</option>
-                                        <option value="READY">READY</option>
-                                        <option value="FINISH">FINISH</option>
-                                        <option value="PROSES">PROSES PEMENUHAN</option>
-                                        <option value="TEKNIS">TEKNIS</option>
-                                    </select>
-                                    <div class="search-box">
-                                        <i class="fas fa-search"></i>
-                                        <input type="text" id="teknisiSearchInput" placeholder="Cari order...">
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="table-wrapper">
-                            <table id="teknisiTable">
-                                <thead>
-                                    <tr>
-                                        <th>NO</th>
-                                        <th>NAMA TEKNISI</th>
-                                        <th>TGL</th>
-                                        <th>NO. CASE</th>
-                                        <th>TYPE</th>
-                                        <th>NO. SERI</th>
-                                        <th>NO. PART</th>
-                                        <th>NAMA ITEM</th>
-                                        <th>JUMLAH</th>
-                                        <th>KATEGORI</th>
-                                        <th>LAYANAN</th>
-                                        <th>KONSUMEN</th>
-                                        <th>NO. TELP</th>
-                                        <th>STATUS</th>
-                                        <th>Aksi</th>
-                                    </tr>
-                                </thead>
-                                <tbody id="teknisiTableBody">
-                                    <!-- Data akan diisi oleh JavaScript -->
-                                </tbody>
-                            </table>
-                        </div>
-                    </section>
-                </div>
+    // ---- EXPORT RESERVASI TO EXCEL ----
+    function exportReservasiToExcel() {
+      if (filteredReservasi.length === 0) {
+        showNotification('Tidak ada data untuk diekspor!', 5000);
+        return;
+      }
 
-                <!-- Order Baru Page -->
-                <div class="page-section" id="order-baru">
-                    <!-- Form Section -->
-                    <section class="form-section">
-                        <h2 class="section-title">
-                            <i class="fas fa-plus-circle"></i> Form Order Sparepart
-                        </h2>
-                        <form id="orderForm">
-                            <div class="form-grid">
-                                <div class="form-group">
-                                    <label class="form-label">NAMA TEKNISI</label>
-                                    <select class="form-select" id="namaTeknisi" required>
-                                        <option value="">Pilih Teknisi</option>
-                                        <option value="HARMINDO">HARMINDO</option>
-                                        <option value="INOSENCIUS">INOSENCIUS</option>
-                                        <option value="RIZALDI">RIZALDI</option>
-                                        <option value="YANDRI">YANDRI</option>
-                                        <option value="FAUZI">FAUZI</option>
-                                        <option value="KRISTIAN">KRISTIAN</option>
-                                    </select>
-                                </div>
-                                <div class="form-group">
-                                    <label class="form-label">TGL</label>
-                                    <input type="date" class="form-input" id="tgl" required>
-                                </div>
-                                <div class="form-group">
-                                    <label class="form-label">NO. CASE</label>
-                                    <input type="text" class="form-input" id="noCase" placeholder="Masukkan nomor case" required>
-                                </div>
-                                <div class="form-group">
-                                    <label class="form-label">TYPE</label>
-                                    <input type="text" class="form-input" id="type" placeholder="Masukkan type" required>
-                                </div>
-                                <div class="form-group">
-                                    <label class="form-label">NO. SERI</label>
-                                    <input type="text" class="form-input" id="noSeri" placeholder="Masukkan nomor seri" required>
-                                </div>
-                                <div class="form-group">
-                                    <label class="form-label">NO. PART</label>
-                                    <input type="text" class="form-input" id="noPart" placeholder="Masukkan nomor part" required>
-                                </div>
-                                <div class="form-group">
-                                    <label class="form-label">NAMA ITEM</label>
-                                    <input type="text" class="form-input" id="namaItem" placeholder="Masukkan nama item" required>
-                                </div>
-                                <div class="form-group">
-                                    <label class="form-label">JUMLAH</label>
-                                    <input type="number" class="form-input" id="jumlah" min="1" placeholder="1" required>
-                                </div>
-                                <div class="form-group">
-                                    <label class="form-label">KATEGORI PRODUK</label>
-                                    <select class="form-select" id="kategoriProduk" required>
-                                        <option value="">Pilih Kategori</option>
-                                        <option value="AV">AV</option>
-                                        <option value="HA">HA</option>
-                                        <option value="EMP">EMP</option>
-                                    </select>
-                                </div>
-                                <div class="form-group">
-                                    <label class="form-label">LAYANAN</label>
-                                    <select class="form-select" id="layanan" required>
-                                        <option value="">Pilih Layanan</option>
-                                        <option value="KUNJUNGAN TOKO">KUNJUNGAN TOKO</option>
-                                        <option value="KUNJUNGAN CALL">KUNJUNGAN CALL</option>
-                                        <option value="KUNJUNGAN LK">KUNJUNGAN LK</option>
-                                        <option value="PSR FLORES">PSR FLORES</option>
-                                        <option value="KONSUMEN LANGSUNG">KONSUMEN LANGSUNG</option>
-                                    </select>
-                                </div>
-                                <div class="form-group">
-                                    <label class="form-label">NAMA KONSUMEN</label>
-                                    <input type="text" class="form-input" id="namaKonsumen" placeholder="Masukkan nama konsumen" required>
-                                </div>
-                                <div class="form-group">
-                                    <label class="form-label">NO. TELP</label>
-                                    <input type="tel" class="form-input" id="noTelp" placeholder="Masukkan nomor telepon" required>
-                                </div>
-                            </div>
-                            <div class="btn-group">
-                                <button type="submit" class="btn btn-primary" id="submitButton">
-                                    <i class="fas fa-save"></i> Simpan Order
-                                </button>
-                                <button type="reset" class="btn btn-secondary">
-                                    <i class="fas fa-redo"></i> Reset Form
-                                </button>
-                            </div>
-                        </form>
-                    </section>
-                </div>
+      // Buat workbook baru
+      const wb = XLSX.utils.book_new();
+      
+      // Buat worksheet dari data
+      const ws = XLSX.utils.json_to_sheet(filteredReservasi.map((row, index) => {
+        return {
+          "No.": index + 1,
+          "Nomor": row[reservasiIndexMap[0]] || "",
+          "Catatan": row[reservasiIndexMap[1]] || "",
+          "Part": row[reservasiIndexMap[2]] || "",
+          "Qty Reservasi": row[reservasiIndexMap[3]] || "",
+          "Qty Transaksi": row[reservasiIndexMap[4]] || "",
+          "Qty Close": row[reservasiIndexMap[5]] || "",
+          "Part Demand": row[reservasiIndexMap[6]] || "",
+          "Serial Number": row[reservasiIndexMap[7]] || "",
+          "Return To Factory": row[reservasiIndexMap[8]] || "",
+          "Teknisi Perbaikan": row[reservasiIndexMap[9]] || "",
+          "Analisa SA": row[reservasiIndexMap[10]] || "",
+          "Disetujui Pada": formatDateTime(row[reservasiIndexMap[11]])
+        };
+      }));
+      
+      // Tambahkan worksheet ke workbook
+      XLSX.utils.book_append_sheet(wb, ws, "Reservasi Komponen");
+      
+      // Generate nama file dengan timestamp
+      const now = new Date();
+      const timestamp = now.getFullYear() + 
+                      String(now.getMonth() + 1).padStart(2, '0') + 
+                      String(now.getDate()).padStart(2, '0') + '_' +
+                      String(now.getHours()).padStart(2, '0') + 
+                      String(now.getMinutes()).padStart(2, '0');
+      const fileName = `Data_Reservasi_Komponen_${timestamp}.xlsx`;
+      
+      // Download file
+      XLSX.writeFile(wb, fileName);
+      
+      showNotification('Data reservasi berhasil diekspor ke Excel!');
+    }
 
-                <!-- Daftar Order Page -->
-                <div class="page-section" id="daftar-order">
-                    <!-- Table Section -->
-                    <section class="table-section">
-                        <div class="table-header">
-                            <h2 class="section-title">
-                                <i class="fas fa-list"></i> Daftar Order Sparepart
-                            </h2>
-                            <div class="table-actions">
-                                <div class="filter-box">
-                                    <select class="filter-select" id="statusFilter">
-                                        <option value="">Semua Status</option>
-                                        <option value="OPEN">OPEN</option>
-                                        <option value="READY">READY</option>
-                                        <option value="FINISH">FINISH</option>
-                                        <option value="PROSES">PROSES PEMENUHAN</option>
-                                        <option value="TEKNIS">TEKNIS</option>
-                                    </select>
-                                    <div class="search-box">
-                                        <i class="fas fa-search"></i>
-                                        <input type="text" id="searchInput" placeholder="Cari order...">
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="table-wrapper">
-                            <table id="orderTable">
-                                <thead>
-                                    <tr>
-                                        <th>NO</th>
-                                        <th>NAMA TEKNISI</th>
-                                        <th>TGL</th>
-                                        <th>NO. CASE</th>
-                                        <th>TYPE</th>
-                                        <th>NO. SERI</th>
-                                        <th>NO. PART</th>
-                                        <th>NAMA ITEM</th>
-                                        <th>JUMLAH</th>
-                                        <th>KATEGORI</th>
-                                        <th>LAYANAN</th>
-                                        <th>KONSUMEN</th>
-                                        <th>NO. TELP</th>
-                                        <th>TGL ORDER</th>
-                                        <th>NO. ORDER</th>
-                                        <th>KETERANGAN</th>
-                                        <th>STATUS</th>
-                                    </tr>
-                                </thead>
-                                <tbody id="tableBody">
-                                    <!-- Data akan diisi oleh JavaScript -->
-                                </tbody>
-                            </table>
-                        </div>
-                    </section>
-                </div>
+    // ---- EXPORT SERVICE TO EXCEL ----
+    function exportServiceToExcel() {
+      if (filteredService.length === 0) {
+        showNotification('Tidak ada data untuk diekspor!', 5000);
+        return;
+      }
 
-                <!-- Admin Sparepart Page -->
-                <div class="page-section" id="admin-sparepart">
-                    <!-- Table Section -->
-                    <section class="table-section">
-                        <div class="table-header">
-                            <h2 class="section-title">
-                                <i class="fas fa-tools"></i> Admin Sparepart - Kelola Semua Order
-                            </h2>
-                            <div class="table-actions">
-                                <button class="btn btn-excel" onclick="downloadExcel()">
-                                    <i class="fas fa-file-excel"></i> Download Excel
-                                </button>
-                                <div class="filter-box">
-                                    <select class="filter-select" id="adminStatusFilter">
-                                        <option value="">Semua Status</option>
-                                        <option value="OPEN">OPEN</option>
-                                        <option value="READY">READY</option>
-                                        <option value="FINISH">FINISH</option>
-                                        <option value="PROSES">PROSES PEMENUHAN</option>
-                                        <option value="TEKNIS">TEKNIS</option>
-                                    </select>
-                                    <div class="search-box">
-                                        <i class="fas fa-search"></i>
-                                        <input type="text" id="adminSearchInput" placeholder="Cari order...">
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="table-wrapper">
-                            <table id="adminOrderTable">
-                                <thead>
-                                    <tr>
-                                        <th>NO</th>
-                                        <th>NAMA TEKNISI</th>
-                                        <th>TGL</th>
-                                        <th>NO. CASE</th>
-                                        <th>TYPE</th>
-                                        <th>NO. SERI</th>
-                                        <th>NO. PART</th>
-                                        <th>NAMA ITEM</th>
-                                        <th>JUMLAH</th>
-                                        <th>KATEGORI</th>
-                                        <th>LAYANAN</th>
-                                        <th>KONSUMEN</th>
-                                        <th>NO. TELP</th>
-                                        <th>TGL ORDER</th>
-                                        <th>NO. ORDER</th>
-                                        <th>KETERANGAN</th>
-                                        <th>STATUS</th>
-                                        <th>Aksi</th>
-                                    </tr>
-                                </thead>
-                                <tbody id="adminTableBody">
-                                    <!-- Data akan diisi oleh JavaScript -->
-                                </tbody>
-                            </table>
-                        </div>
-                    </section>
-                </div>
+      // Buat workbook baru
+      const wb = XLSX.utils.book_new();
+      
+      // Buat worksheet dari data
+      const ws = XLSX.utils.json_to_sheet(filteredService.map((row, index) => {
+        return {
+          "No.": index + 1,
+          "Tanggal Pendaftaran": formatDateOnly(row[serviceIndexMap[0]]),
+          "Nomor Service Call": row[serviceIndexMap[1]] || "",
+          "Jenis Layanan": row[serviceIndexMap[2]] || "",
+          "Jenis Garansi": row[serviceIndexMap[3]] || "",
+          "Tipe Demand": row[serviceIndexMap[4]] || "",
+          "Nomor Seri": row[serviceIndexMap[5]] || "",
+          "Nama Pemilik": row[serviceIndexMap[6]] || "",
+          "Alamat Pemilik": row[serviceIndexMap[7]] || "",
+          "Nama Teknisi": row[serviceIndexMap[8]] || "",
+          "Tanggal Serah Terima": formatDateTime(row[serviceIndexMap[9]])
+        };
+      }));
+      
+      // Tambahkan worksheet ke workbook
+      XLSX.utils.book_append_sheet(wb, ws, "Service Calls");
+      
+      // Generate nama file dengan timestamp
+      const now = new Date();
+      const timestamp = now.getFullYear() + 
+                      String(now.getMonth() + 1).padStart(2, '0') + 
+                      String(now.getDate()).padStart(2, '0') + '_' +
+                      String(now.getHours()).padStart(2, '0') + 
+                      String(now.getMinutes()).padStart(2, '0');
+      const fileName = `Data_Service_Calls_${timestamp}.xlsx`;
+      
+      // Download file
+      XLSX.writeFile(wb, fileName);
+      
+      showNotification('Data service calls berhasil diekspor ke Excel!');
+    }
 
-                <!-- History Page -->
-                <div class="page-section" id="history">
-                    <div class="form-section">
-                        <h2 class="section-title">
-                            <i class="fas fa-history"></i> History Order Sparepart
-                        </h2>
-                        
-                        <!-- Filter Section -->
-                        <div class="history-filters">
-                            <div class="history-filter-group">
-                                <label class="form-label">Periode Tanggal</label>
-                                <div style="display: flex; gap: 10px;">
-                                    <input type="date" class="form-input" id="historyDateFrom">
-                                    <input type="date" class="form-input" id="historyDateTo">
-                                </div>
-                            </div>
-                            <div class="history-filter-group">
-                                <label class="form-label">Status</label>
-                                <select class="form-select" id="historyStatusFilter">
-                                    <option value="">Semua Status</option>
-                                    <option value="OPEN">OPEN</option>
-                                    <option value="READY">READY</option>
-                                    <option value="FINISH">FINISH</option>
-                                    <option value="PROSES">PROSES PEMENUHAN</option>
-                                    <option value="TEKNIS">TEKNIS</option>
-                                </select>
-                            </div>
-                            <div class="history-filter-group">
-                                <label class="form-label">Teknisi</label>
-                                <select class="form-select" id="historyTeknisiFilter">
-                                    <option value="">Semua Teknisi</option>
-                                    <option value="HARMINDO">HARMINDO</option>
-                                    <option value="INOSENCIUS">INOSENCIUS</option>
-                                    <option value="RIZALDI">RIZALDI</option>
-                                    <option value="YANDRI">YANDRI</option>
-                                    <option value="FAUZI">FAUZI</option>
-                                    <option value="KRISTIAN">KRISTIAN</option>
-                                </select>
-                            </div>
-                            <div class="history-filter-group">
-                                <label class="form-label">&nbsp;</label>
-                                <button class="btn btn-primary" onclick="applyHistoryFilters()">
-                                    <i class="fas fa-filter"></i> Terapkan Filter
-                                </button>
-                            </div>
-                        </div>
-                        
-                        <!-- Summary Cards -->
-                        <div class="history-summary">
-                            <div class="summary-card">
-                                <div class="summary-value" id="historyTotalOrders">0</div>
-                                <div class="summary-label">Total Order</div>
-                            </div>
-                            <div class="summary-card">
-                                <div class="summary-value" id="historyFinishedOrders">0</div>
-                                <div class="summary-label">Order Selesai</div>
-                            </div>
-                            <div class="summary-card">
-                                <div class="summary-value" id="historyPendingOrders">0</div>
-                                <div class="summary-label">Order Pending</div>
-                            </div>
-                            <div class="summary-card">
-                                <div class="summary-value" id="historyAvgCompletion">0</div>
-                                <div class="summary-label">Rata-rata Penyelesaian</div>
-                            </div>
-                        </div>
-                        
-                        <!-- History Table -->
-                        <div class="table-section">
-                            <div class="table-header">
-                                <h3 class="section-title">
-                                    <i class="fas fa-table"></i> Data History Order
-                                </h3>
-                                <div class="table-actions">
-                                    <button class="btn btn-excel" onclick="downloadHistoryExcel()">
-                                        <i class="fas fa-file-excel"></i> Download Excel
-                                    </button>
-                                    <div class="search-box">
-                                        <i class="fas fa-search"></i>
-                                        <input type="text" id="historySearchInput" placeholder="Cari history...">
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="table-wrapper">
-                                <table id="historyTable">
-                                    <thead>
-                                        <tr>
-                                            <th>NO</th>
-                                            <th>TGL ORDER</th>
-                                            <th>NO. ORDER</th>
-                                            <th>TEKNISI</th>
-                                            <th>NO. CASE</th>
-                                            <th>TYPE</th>
-                                            <th>ITEM</th>
-                                            <th>JUMLAH</th>
-                                            <th>KONSUMEN</th>
-                                            <th>STATUS</th>
-                                            <th>TGL SELESAI</th>
-                                            <th>DURASI</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody id="historyTableBody">
-                                        <!-- Data akan diisi oleh JavaScript -->
-                                    </tbody>
-                                </table>
-                            </div>
-                        </div>
-                    </div>
-                </div>
+    // ---- LOGO ----
+    function changeLogo() {
+      const file = document.getElementById("logoInput").files[0];
+      if (file) {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+          document.getElementById("logo").src = e.target.result;
+          localStorage.setItem("dashboardLogo", e.target.result); // simpan di local storage
+        };
+        reader.readAsDataURL(file);
+      }
+    }
 
-                <!-- Other Pages (Placeholder) -->
-                <div class="page-section" id="pelanggan">
-                    <div class="form-section">
-                        <h2 class="section-title">
-                            <i class="fas fa-users"></i> Pelanggan
-                        </h2>
-                        <p>Halaman Pelanggan sedang dalam pengembangan...</p>
-                    </div>
-                </div>
+    // ---- FUNGSI FORMAT TANGGAL ----
+    function formatDateTime(dateString) {
+      if (!dateString) return "";
+      
+      // Jika dateString adalah objek Date Excel (angka)
+      if (typeof dateString === 'number') {
+        const date = new Date((dateString - 25569) * 86400 * 1000);
+        return formatDateObject(date);
+      }
+      
+      // Coba parsing sebagai string tanggal
+      const date = new Date(dateString);
+      if (isNaN(date.getTime())) {
+        return dateString; // Kembalikan asli jika tidak bisa diparsing
+      }
+      
+      return formatDateObject(date);
+    }
+    
+    function formatDateObject(date) {
+      const day = String(date.getDate()).padStart(2, '0');
+      const month = String(date.getMonth() + 1).padStart(2, '0');
+      const year = date.getFullYear();
+      const hours = String(date.getHours()).padStart(2, '0');
+      const minutes = String(date.getMinutes()).padStart(2, '0');
+      
+      return `${day}/${month}/${year} ${hours}:${minutes}`;
+    }
+    
+    // ---- FUNGSI FORMAT TANGGAL SAJA (TANPA JAM) ----
+    function formatDateOnly(dateString) {
+      if (!dateString) return "";
+      
+      // Jika dateString adalah objek Date Excel (angka)
+      if (typeof dateString === 'number') {
+        const date = new Date((dateString - 25569) * 86400 * 1000);
+        return formatDateOnlyObject(date);
+      }
+      
+      // Coba parsing sebagai string tanggal
+      const date = new Date(dateString);
+      if (isNaN(date.getTime())) {
+        return dateString; // Kembalikan asli jika tidak bisa diparsing
+      }
+      
+      return formatDateOnlyObject(date);
+    }
+    
+    function formatDateOnlyObject(date) {
+      const day = String(date.getDate()).padStart(2, '0');
+      const month = String(date.getMonth() + 1).padStart(2, '0');
+      const year = date.getFullYear();
+      
+      return `${day}/${month}/${year}`;
+    }
 
-                <div class="page-section" id="pengaturan">
-                    <div class="form-section">
-                        <h2 class="section-title">
-                            <i class="fas fa-cog"></i> Pengaturan
-                        </h2>
-                        <p>Halaman Pengaturan sedang dalam pengembangan...</p>
-                    </div>
-                </div>
-            </div>
-        </main>
-    </div>
+    // ---- MASTER KOMPONEN ----
+    let masterData = [];
+    let filteredMaster = [];
+    let currentMasterPage = 1;
+    let rowsPerPageMaster = 15; // Diubah dari 20 menjadi 15
 
-    <!-- Edit Modal -->
-    <div class="modal" id="editModal">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h3 class="modal-title">Edit Order</h3>
-                <button class="modal-close" onclick="closeEditModal()">
-                    <i class="fas fa-times"></i>
-                </button>
-            </div>
-            <form id="editOrderForm">
-                <div class="form-grid">
-                    <div class="form-group">
-                        <label class="form-label">NAMA TEKNISI</label>
-                        <select class="form-select" id="editNamaTeknisi" required>
-                            <option value="">Pilih Teknisi</option>
-                            <option value="HARMINDO">HARMINDO</option>
-                            <option value="INOSENCIUS">INOSENCIUS</option>
-                            <option value="RIZALDI">RIZALDI</option>
-                            <option value="YANDRI">YANDRI</option>
-                            <option value="FAUZI">FAUZI</option>
-                            <option value="KRISTIAN">KRISTIAN</option>
-                        </select>
-                    </div>
-                    <div class="form-group">
-                        <label class="form-label">TGL</label>
-                        <input type="date" class="form-input" id="editTgl" required>
-                    </div>
-                    <div class="form-group">
-                        <label class="form-label">NO. CASE</label>
-                        <input type="text" class="form-input" id="editNoCase" required>
-                    </div>
-                    <div class="form-group">
-                        <label class="form-label">TYPE</label>
-                        <input type="text" class="form-input" id="editType" required>
-                    </div>
-                    <div class="form-group">
-                        <label class="form-label">NO. SERI</label>
-                        <input type="text" class="form-input" id="editNoSeri" required>
-                    </div>
-                    <div class="form-group">
-                        <label class="form-label">NO. PART</label>
-                        <input type="text" class="form-input" id="editNoPart" required>
-                    </div>
-                    <div class="form-group">
-                        <label class="form-label">NAMA ITEM</label>
-                        <input type="text" class="form-input" id="editNamaItem" required>
-                    </div>
-                    <div class="form-group">
-                        <label class="form-label">JUMLAH</label>
-                        <input type="number" class="form-input" id="editJumlah" min="1" required>
-                    </div>
-                    <div class="form-group">
-                        <label class="form-label">KATEGORI PRODUK</label>
-                        <select class="form-select" id="editKategoriProduk" required>
-                            <option value="">Pilih Kategori</option>
-                            <option value="AV">AV</option>
-                            <option value="HA">HA</option>
-                            <option value="EMP">EMP</option>
-                        </select>
-                    </div>
-                    <div class="form-group">
-                        <label class="form-label">LAYANAN</label>
-                        <select class="form-select" id="editLayanan" required>
-                            <option value="">Pilih Layanan</option>
-                            <option value="KUNJUNGAN TOKO">KUNJUNGAN TOKO</option>
-                            <option value="KUNJUNGAN CALL">KUNJUNGAN CALL</option>
-                            <option value="KUNJUNGAN LK">KUNJUNGAN LK</option>
-                            <option value="PSR FLORES">PSR FLORES</option>
-                            <option value="KONSUMEN LANGSUNG">KONSUMEN LANGSUNG</option>
-                        </select>
-                    </div>
-                    <div class="form-group">
-                        <label class="form-label">NAMA KONSUMEN</label>
-                        <input type="text" class="form-input" id="editNamaKonsumen" required>
-                    </div>
-                    <div class="form-group">
-                        <label class="form-label">NO. TELP</label>
-                        <input type="tel" class="form-input" id="editNoTelp" required>
-                    </div>
-                    <div class="form-group" id="editTglOrderGroup">
-                        <label class="form-label">TGL ORDER</label>
-                        <input type="date" class="form-input" id="editTglOrder">
-                    </div>
-                    <div class="form-group" id="editNoOrderGroup">
-                        <label class="form-label">NO. ORDER</label>
-                        <input type="text" class="form-input" id="editNoOrder">
-                    </div>
-                    <div class="form-group" id="editKeteranganGroup">
-                        <label class="form-label">KETERANGAN</label>
-                        <input type="text" class="form-input" id="editKeterangan">
-                    </div>
-                    <div class="form-group">
-                        <label class="form-label">STATUS</label>
-                        <select class="form-select" id="editStatus">
-                            <option value="OPEN">OPEN</option>
-                            <option value="READY">READY</option>
-                            <option value="FINISH">FINISH</option>
-                            <option value="PROSES">PROSES PEMENUHAN</option>
-                            <option value="TEKNIS">TEKNIS</option>
-                        </select>
-                    </div>
-                </div>
-                <div class="btn-group" style="margin-top: 15px;">
-                    <button type="submit" class="btn btn-primary">
-                        <i class="fas fa-save"></i> Simpan Perubahan
-                    </button>
-                    <button type="button" class="btn btn-secondary" onclick="closeEditModal()">
-                        <i class="fas fa-times"></i> Batal
-                    </button>
-                </div>
-            </form>
-        </div>
-    </div>
+    function importMasterExcel() {
+      const file = document.getElementById('importMaster').files[0];
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        const data = new Uint8Array(e.target.result);
+        const workbook = XLSX.read(data, {type: 'array'});
+        const sheet = workbook.Sheets[workbook.SheetNames[0]];
+        const json = XLSX.utils.sheet_to_json(sheet, {header:1});
 
-    <!-- Modal Konfirmasi -->
-    <div class="modal" id="confirmModal">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h3 class="modal-title">Konfirmasi Hapus</h3>
-                <button class="modal-close" onclick="closeModal()">
-                    <i class="fas fa-times"></i>
-                </button>
-            </div>
-            <p>Apakah Anda yakin ingin menghapus order ini?</p>
-            <div class="btn-group" style="margin-top: 15px;">
-                <button class="btn btn-danger" onclick="confirmDelete()">
-                    <i class="fas fa-trash"></i> Hapus
-                </button>
-                <button class="btn btn-secondary" onclick="closeModal()">
-                    <i class="fas fa-times"></i> Batal
-                </button>
-            </div>
-        </div>
-    </div>
+        const headers = ["No.","Part Number","Description"];
+        const excelHeaders = json[0].map(h => h.toString().trim());
+        let indexMap = headers.map(h => excelHeaders.indexOf(h));
 
-    <!-- Toast Notification -->
-    <div class="toast" id="toast"></div>
+        masterData = json.slice(1).filter(r => r.length > 0).map(r => [
+          r[indexMap[1]] || "",
+          r[indexMap[2]] || ""
+        ]);
 
-    <script>
-        // Global variables
-        let orders = [];
-        let editingIndex = -1;
-        let deleteIndex = -1;
-        let currentPage = 'dashboard';
+        // Simpan ke localStorage
+        saveToLocalStorage('masterData', masterData);
+        
+        updatePartFilter(masterData);
+        filteredMaster = masterData;
+        currentMasterPage = 1;
+        renderMasterTable();
+      };
+      reader.readAsArrayBuffer(file);
+    }
 
-        // Initialize
-        document.addEventListener('DOMContentLoaded', function() {
-            // Set today's date
-            const today = new Date().toISOString().split('T')[0];
-            document.getElementById('tgl').value = today;
-            
-            // Set default date range for history (last 30 days)
-            const dateTo = new Date();
-            const dateFrom = new Date();
-            dateFrom.setDate(dateFrom.getDate() - 30);
-            
-            document.getElementById('historyDateFrom').value = dateFrom.toISOString().split('T')[0];
-            document.getElementById('historyDateTo').value = dateTo.toISOString().split('T')[0];
-            
-            // Load data from localStorage or sample data
-            loadData();
-            
-            // Setup event listeners
-            setupEventListeners();
-            
-            // Setup responsive behavior
-            setupResponsiveBehavior();
+    function updatePartFilter(data) {
+      const select = document.getElementById("filterPart");
+      select.innerHTML = '<option value="all">Semua</option>';
+      const initials = new Set();
+      data.forEach(row => {
+        if (row[0]) initials.add(row[0].toString().charAt(0).toUpperCase());
+      });
+      [...initials].sort().forEach(l => {
+        let opt = document.createElement("option");
+        opt.value = l;
+        opt.textContent = l;
+        select.appendChild(opt);
+      });
+    }
+
+    function renderMasterTable() {
+      const tbody = document.getElementById("masterTable").querySelector("tbody");
+      tbody.innerHTML = "";
+
+      const start = (currentMasterPage - 1) * rowsPerPageMaster;
+      const end = start + rowsPerPageMaster;
+      const pageData = filteredMaster.slice(start, end);
+
+      pageData.forEach((row, i) => {
+        let newRow = tbody.insertRow();
+        
+        // Kolom No. (rata kiri)
+        let cellNo = newRow.insertCell();
+        cellNo.textContent = start + i + 1;
+        cellNo.className = "text-left";
+        
+        // Kolom Part Number (rata kiri)
+        let cellPart = newRow.insertCell();
+        cellPart.textContent = row[0];
+        cellPart.className = "text-left";
+        
+        // Kolom Description (rata kiri)
+        let cellDesc = newRow.insertCell();
+        cellDesc.textContent = row[1];
+        cellDesc.className = "text-left";
+      });
+
+      document.getElementById("pageInfoMaster").textContent =
+        `Halaman ${currentMasterPage} dari ${Math.ceil(filteredMaster.length / rowsPerPageMaster)}`;
+
+      document.getElementById("prevMaster").disabled = currentMasterPage === 1;
+      document.getElementById("nextMaster").disabled = end >= filteredMaster.length;
+    }
+
+    function applyMasterFilter() {
+      const searchVal = document.getElementById("searchMaster").value.toLowerCase();
+      const filterVal = document.getElementById("filterPart").value;
+
+      filteredMaster = masterData;
+
+      if (filterVal !== "all") {
+        filteredMaster = filteredMaster.filter(r => r[0].toString().toUpperCase().startsWith(filterVal));
+      }
+
+      if (searchVal) {
+        filteredMaster = filteredMaster.filter(r => {
+          return (
+            (r[0] && r[0].toString().toLowerCase().includes(searchVal)) ||
+            (r[1] && r[1].toString().toLowerCase().includes(searchVal))
+          );
         });
-
-        // Setup responsive behavior
-        function setupResponsiveBehavior() {
-            // Handle window resize
-            window.addEventListener('resize', handleResize);
-            
-            // Initial check
-            handleResize();
-        }
-
-        // Handle window resize
-        function handleResize() {
-            const width = window.innerWidth;
-            
-            // Adjust layout based on screen size
-            if (width <= 768) {
-                // Mobile layout
-                document.body.style.fontSize = 'var(--base-font-size-mobile)';
-                
-                // Close sidebar if open on small screens
-                if (!document.getElementById('sidebar').classList.contains('active')) {
-                    closeSidebar();
-                }
-            } else {
-                // Desktop layout
-                document.body.style.fontSize = 'var(--base-font-size)';
-                openSidebar();
-            }
-            
-            // Adjust table layout for very small screens
-            if (width <= 400) {
-                // Further adjustments for very small screens
-            }
-        }
-
-        // Open sidebar
-        function openSidebar() {
-            document.getElementById('sidebar').classList.add('active');
-            document.getElementById('sidebarOverlay').classList.add('active');
-            document.querySelector('.main-content').style.marginLeft = 'var(--sidebar-width)';
-        }
-
-        // Close sidebar
-        function closeSidebar() {
-            document.getElementById('sidebar').classList.remove('active');
-            document.getElementById('sidebarOverlay').classList.remove('active');
-            document.querySelector('.main-content').style.marginLeft = '0';
-        }
-
-        // Setup event listeners
-        function setupEventListeners() {
-            // Menu toggle
-            document.getElementById('menuToggle').addEventListener('click', function() {
-                openSidebar();
-            });
-
-            // Sidebar close
-            document.getElementById('sidebarClose').addEventListener('click', function() {
-                closeSidebar();
-            });
-
-            // Overlay close
-            document.getElementById('sidebarOverlay').addEventListener('click', function() {
-                closeSidebar();
-            });
-
-            // Form submit
-            document.getElementById('orderForm').addEventListener('submit', handleFormSubmit);
-
-            // Edit form submit
-            document.getElementById('editOrderForm').addEventListener('submit', handleEditFormSubmit);
-
-            // Search functionality
-            document.getElementById('searchInput').addEventListener('input', handleSearch);
-            document.getElementById('adminSearchInput').addEventListener('input', handleAdminSearch);
-            document.getElementById('teknisiSearchInput').addEventListener('input', handleTeknisiSearch);
-            document.getElementById('historySearchInput').addEventListener('input', handleHistorySearch);
-
-            // Status filter functionality
-            document.getElementById('statusFilter').addEventListener('change', handleSearch);
-            document.getElementById('adminStatusFilter').addEventListener('change', handleAdminSearch);
-            document.getElementById('teknisiStatusFilter').addEventListener('change', handleTeknisiSearch);
-
-            // Menu item clicks
-            document.querySelectorAll('.menu-item').forEach(item => {
-                item.addEventListener('click', function(e) {
-                    e.preventDefault();
-                    const page = this.getAttribute('data-page');
-                    switchPage(page);
-                    
-                    // Close sidebar on mobile after navigation
-                    if (window.innerWidth <= 768) {
-                        closeSidebar();
-                    }
-                });
-            });
-        }
-
-        // Switch page
-        function switchPage(pageName) {
-            // Hide all pages
-            document.querySelectorAll('.page-section').forEach(section => {
-                section.classList.remove('active');
-            });
-
-            // Show selected page
-            const selectedPage = document.getElementById(pageName);
-            if (selectedPage) {
-                selectedPage.classList.add('active');
-            }
-
-            // Update active menu
-            document.querySelectorAll('.menu-item').forEach(item => {
-                item.classList.remove('active');
-            });
-            document.querySelector(`[data-page="${pageName}"]`).classList.add('active');
-
-            // Update page title
-            const titles = {
-                'dashboard': 'Order Sparepart Elektronik',
-                'order-baru': 'Order Baru',
-                'daftar-order': 'Daftar Order',
-                'teknisi': 'Data Order Teknisi',
-                'admin-sparepart': 'Admin Sparepart',
-                'pelanggan': 'Pelanggan',
-                'history': 'History Order',
-                'pengaturan': 'Pengaturan'
-            };
-            document.getElementById('pageTitle').textContent = titles[pageName] || 'Order Sparepart Elektronik';
-
-            currentPage = pageName;
-
-            // Show toast for menu navigation
-            showToast(`Navigasi ke ${titles[pageName]}`, 'info');
-
-            // Refresh tables when switching to relevant pages
-            if (pageName === 'daftar-order' || pageName === 'admin-sparepart' || pageName === 'teknisi') {
-                renderTable();
-                renderAdminTable();
-                renderTeknisiTable();
-            }
-            
-            // Update dashboard stats when switching to dashboard
-            if (pageName === 'dashboard') {
-                updateDashboardStats();
-            }
-            
-            // Update history when switching to history page
-            if (pageName === 'history') {
-                renderHistoryTable();
-                updateHistorySummary();
-            }
-        }
-
-        // Load data from localStorage or sample data
-        function loadData() {
-            // Try to get data from localStorage
-            const savedData = localStorage.getItem('ordersData');
-            
-            if (savedData) {
-                // Parse and use saved data
-                try {
-                    orders = JSON.parse(savedData);
-                    showToast('Data berhasil dimuat dari penyimpanan lokal', 'success');
-                } catch (e) {
-                    console.error('Error parsing saved data:', e);
-                    loadSampleData();
-                }
-            } else {
-                // Load sample data if no saved data exists
-                loadSampleData();
-            }
-            
-            renderTable();
-            renderAdminTable();
-            renderTeknisiTable();
-            renderHistoryTable();
-            updateDashboardStats();
-            updateHistorySummary();
-        }
-
-        // Save data to localStorage
-        function saveToLocalStorage() {
-            try {
-                localStorage.setItem('ordersData', JSON.stringify(orders));
-                console.log('Data berhasil disimpan ke localStorage');
-            } catch (e) {
-                console.error('Error saving to localStorage:', e);
-                showToast('Gagal menyimpan data ke penyimpanan lokal', 'error');
-            }
-        }
-
-        // Load sample data
-        function loadSampleData() {
-            orders = [
-                {
-                    namaTeknisi: 'HARMINDO',
-                    tgl: '2024-01-15',
-                    noCase: 'CS001',
-                    type: 'Laptop ASUS',
-                    noSeri: 'LP123456',
-                    noPart: 'P-001',
-                    namaItem: 'Keyboard Laptop',
-                    jumlah: 1,
-                    kategoriProduk: 'AV',
-                    layanan: 'KUNJUNGAN TOKO',
-                    namaKonsumen: 'Ahmad Fauzi',
-                    noTelp: '081234567890',
-                    tglOrder: '2024-01-15',
-                    noOrder: 'ORD-001',
-                    keterangan: 'Keyboard tidak berfungsi',
-                    status: 'FINISH',
-                    tglSelesai: '2024-01-18'
-                },
-                {
-                    namaTeknisi: 'INOSENCIUS',
-                    tgl: '2024-01-16',
-                    noCase: 'CS002',
-                    type: 'Desktop Dell',
-                    noSeri: 'DT789012',
-                    noPart: 'P-002',
-                    namaItem: 'RAM 8GB DDR4',
-                    jumlah: 2,
-                    kategoriProduk: 'HA',
-                    layanan: 'KUNJUNGAN CALL',
-                    namaKonsumen: 'Siti Nurhaliza',
-                    noTelp: '082345678901',
-                    tglOrder: '2024-01-16',
-                    noOrder: 'ORD-002',
-                    keterangan: 'Upgrade RAM',
-                    status: 'FINISH',
-                    tglSelesai: '2024-01-20'
-                },
-                {
-                    namaTeknisi: 'RIZALDI',
-                    tgl: '2024-01-17',
-                    noCase: 'CS003',
-                    type: 'Printer HP',
-                    noSeri: 'PR345678',
-                    noPart: 'P-003',
-                    namaItem: 'Tinta Printer Hitam',
-                    jumlah: 3,
-                    kategoriProduk: 'EMP',
-                    layanan: 'KUNJUNGAN LK',
-                    namaKonsumen: 'Budi Santoso',
-                    noTelp: '083456789012',
-                    tglOrder: '2024-01-17',
-                    noOrder: 'ORD-003',
-                    keterangan: 'Penggantian tinta',
-                    status: 'FINISH',
-                    tglSelesai: '2024-01-19'
-                },
-                {
-                    namaTeknisi: 'YANDRI',
-                    tgl: '2024-01-18',
-                    noCase: 'CS004',
-                    type: 'Monitor LG',
-                    noSeri: 'MN456789',
-                    noPart: 'P-004',
-                    namaItem: 'Kabel Power',
-                    jumlah: 1,
-                    kategoriProduk: 'AV',
-                    layanan: 'KUNJUNGAN TOKO',
-                    namaKonsumen: 'Dewi Lestari',
-                    noTelp: '084567890123',
-                    tglOrder: '2024-01-18',
-                    noOrder: 'ORD-004',
-                    keterangan: 'Kabel power rusak',
-                    status: 'PROSES'
-                },
-                {
-                    namaTeknisi: 'FAUZI',
-                    tgl: '2024-01-19',
-                    noCase: 'CS005',
-                    type: 'PC Built-up',
-                    noSeri: 'PC567890',
-                    noPart: 'P-005',
-                    namaItem: 'Motherboard',
-                    jumlah: 1,
-                    kategoriProduk: 'HA',
-                    layanan: 'KUNJUNGAN CALL',
-                    namaKonsumen: 'Eko Prasetyo',
-                    noTelp: '085678901234',
-                    tglOrder: '2024-01-19',
-                    noOrder: 'ORD-005',
-                    keterangan: 'Motherboard mati total',
-                    status: 'PROSES'
-                },
-                {
-                    namaTeknisi: 'KRISTIAN',
-                    tgl: '2024-01-20',
-                    noCase: 'CS006',
-                    type: 'Smartphone Samsung',
-                    noSeri: 'SP678901',
-                    noPart: 'P-006',
-                    namaItem: 'Baterai',
-                    jumlah: 1,
-                    kategoriProduk: 'EMP',
-                    layanan: 'KONSUMEN LANGSUNG',
-                    namaKonsumen: 'Fitri Handayani',
-                    noTelp: '086789012345',
-                    tglOrder: '2024-01-20',
-                    noOrder: 'ORD-006',
-                    keterangan: 'Baterai bocor',
-                    status: 'TEKNIS'
-                },
-                {
-                    namaTeknisi: 'HARMINDO',
-                    tgl: '2024-01-21',
-                    noCase: 'CS007',
-                    type: 'Tablet iPad',
-                    noSeri: 'TB789012',
-                    noPart: 'P-007',
-                    namaItem: 'Layar LCD',
-                    jumlah: 1,
-                    kategoriProduk: 'AV',
-                    layanan: 'PSR FLORES',
-                    namaKonsumen: 'Gunawan Santoso',
-                    noTelp: '087890123456',
-                    tglOrder: '2024-01-21',
-                    noOrder: 'ORD-007',
-                    keterangan: 'Layar pecah',
-                    status: 'TEKNIS'
-                }
-            ];
-            
-            // Save sample data to localStorage
-            saveToLocalStorage();
-            showToast('Data sampel berhasil dimuat', 'info');
-        }
-
-        // Update dashboard statistics
-        function updateDashboardStats() {
-            // Update total orders
-            document.getElementById('totalOrderValue').textContent = orders.length;
-            
-            // Update today's orders
-            const today = new Date().toISOString().split('T')[0];
-            const todayOrders = orders.filter(order => order.tgl === today);
-            document.getElementById('todayOrderValue').textContent = todayOrders.length;
-            
-            // Update pending orders (OPEN + READY + PROSES + TEKNIS)
-            const pendingOrders = orders.filter(order => 
-                order.status === 'OPEN' || 
-                order.status === 'READY' || 
-                order.status === 'PROSES' || 
-                order.status === 'TEKNIS'
-            );
-            document.getElementById('pendingOrderValue').textContent = pendingOrders.length;
-            
-            // Update status counts
-            const openOrders = orders.filter(order => order.status === 'OPEN');
-            const readyOrders = orders.filter(order => order.status === 'READY');
-            const finishOrders = orders.filter(order => order.status === 'FINISH');
-            
-            document.getElementById('openOrderValue').textContent = openOrders.length;
-            document.getElementById('readyOrderValue').textContent = readyOrders.length;
-            document.getElementById('finishOrderValue').textContent = finishOrders.length;
-            
-            // Update PROSES PEMENUHAN
-            const prosesPemenuhanOrders = orders.filter(order => order.status === 'PROSES');
-            document.getElementById('prosesPemenuhanValue').textContent = prosesPemenuhanOrders.length;
-            
-            // Update TEKNIS
-            const teknisOrders = orders.filter(order => order.status === 'TEKNIS');
-            document.getElementById('teknisValue').textContent = teknisOrders.length;
-        }
-
-        // Update history summary
-        function updateHistorySummary() {
-            const filteredOrders = getFilteredHistoryOrders();
-            
-            // Total orders
-            document.getElementById('historyTotalOrders').textContent = filteredOrders.length;
-            
-            // Finished orders
-            const finishedOrders = filteredOrders.filter(order => order.status === 'FINISH');
-            document.getElementById('historyFinishedOrders').textContent = finishedOrders.length;
-            
-            // Pending orders
-            const pendingOrders = filteredOrders.filter(order => 
-                order.status !== 'FINISH'
-            );
-            document.getElementById('historyPendingOrders').textContent = pendingOrders.length;
-            
-            // Average completion (in days)
-            let totalDays = 0;
-            let completedCount = 0;
-            
-            finishedOrders.forEach(order => {
-                if (order.tglOrder && order.tglSelesai) {
-                    const start = new Date(order.tglOrder);
-                    const end = new Date(order.tglSelesai);
-                    const diffTime = Math.abs(end - start);
-                    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-                    totalDays += diffDays;
-                    completedCount++;
-                }
-            });
-            
-            const avgCompletion = completedCount > 0 ? Math.round(totalDays / completedCount) : 0;
-            document.getElementById('historyAvgCompletion').textContent = `${avgCompletion} hari`;
-        }
-
-        // Get filtered history orders based on current filters
-        function getFilteredHistoryOrders() {
-            const dateFrom = document.getElementById('historyDateFrom').value;
-            const dateTo = document.getElementById('historyDateTo').value;
-            const statusFilter = document.getElementById('historyStatusFilter').value;
-            const teknisiFilter = document.getElementById('historyTeknisiFilter').value;
-            
-            return orders.filter(order => {
-                // Date filter
-                if (dateFrom && order.tglOrder < dateFrom) return false;
-                if (dateTo && order.tglOrder > dateTo) return false;
-                
-                // Status filter
-                if (statusFilter && order.status !== statusFilter) return false;
-                
-                // Teknisi filter
-                if (teknisiFilter && order.namaTeknisi !== teknisiFilter) return false;
-                
-                return true;
-            });
-        }
-
-        // Apply history filters
-        function applyHistoryFilters() {
-            renderHistoryTable();
-            updateHistorySummary();
-            showToast('Filter history diterapkan', 'success');
-        }
-
-        // Handle form submit
-        function handleFormSubmit(e) {
-            e.preventDefault();
-            
-            // Show loading state
-            const submitButton = document.getElementById('submitButton');
-            const originalText = submitButton.innerHTML;
-            submitButton.innerHTML = '<div class="loading"></div> Menyimpan...';
-            submitButton.disabled = true;
-            
-            setTimeout(() => {
-                const formData = {
-                    namaTeknisi: document.getElementById('namaTeknisi').value,
-                    tgl: document.getElementById('tgl').value,
-                    noCase: document.getElementById('noCase').value,
-                    type: document.getElementById('type').value,
-                    noSeri: document.getElementById('noSeri').value,
-                    noPart: document.getElementById('noPart').value,
-                    namaItem: document.getElementById('namaItem').value,
-                    jumlah: document.getElementById('jumlah').value,
-                    kategoriProduk: document.getElementById('kategoriProduk').value,
-                    layanan: document.getElementById('layanan').value,
-                    namaKonsumen: document.getElementById('namaKonsumen').value,
-                    noTelp: document.getElementById('noTelp').value,
-                    tglOrder: document.getElementById('tgl').value,
-                    noOrder: `ORD-${String(orders.length + 1).padStart(3, '0')}`,
-                    keterangan: '',
-                    status: 'OPEN'
-                };
-
-                orders.push(formData);
-                saveToLocalStorage(); // Save to localStorage
-                showToast('Order berhasil ditambahkan!', 'success');
-
-                renderTable();
-                renderAdminTable();
-                renderTeknisiTable();
-                renderHistoryTable();
-                updateDashboardStats();
-                updateHistorySummary();
-                
-                document.getElementById('orderForm').reset();
-                document.getElementById('tgl').value = new Date().toISOString().split('T')[0];
-                
-                // Restore button state
-                submitButton.innerHTML = originalText;
-                submitButton.disabled = false;
-            }, 1000);
-        }
-
-        // Handle edit form submit
-        function handleEditFormSubmit(e) {
-            e.preventDefault();
-            
-            if (editingIndex >= 0) {
-                const formData = {
-                    namaTeknisi: document.getElementById('editNamaTeknisi').value,
-                    tgl: document.getElementById('editTgl').value,
-                    noCase: document.getElementById('editNoCase').value,
-                    type: document.getElementById('editType').value,
-                    noSeri: document.getElementById('editNoSeri').value,
-                    noPart: document.getElementById('editNoPart').value,
-                    namaItem: document.getElementById('editNamaItem').value,
-                    jumlah: document.getElementById('editJumlah').value,
-                    kategoriProduk: document.getElementById('editKategoriProduk').value,
-                    layanan: document.getElementById('editLayanan').value,
-                    namaKonsumen: document.getElementById('editNamaKonsumen').value,
-                    noTelp: document.getElementById('editNoTelp').value,
-                    tglOrder: document.getElementById('editTglOrder').value,
-                    noOrder: document.getElementById('editNoOrder').value,
-                    keterangan: document.getElementById('editKeterangan').value,
-                    status: document.getElementById('editStatus').value
-                };
-
-                // If status changed to FINISH, set completion date
-                if (formData.status === 'FINISH' && orders[editingIndex].status !== 'FINISH') {
-                    formData.tglSelesai = new Date().toISOString().split('T')[0];
-                }
-
-                orders[editingIndex] = formData;
-                saveToLocalStorage(); // Save to localStorage
-                showToast('Order berhasil diperbarui!', 'success');
-                
-                renderTable();
-                renderAdminTable();
-                renderTeknisiTable();
-                renderHistoryTable();
-                updateDashboardStats();
-                updateHistorySummary();
-                closeEditModal();
-                editingIndex = -1;
-            }
-        }
-
-        // Render table for Daftar Order page
-        function renderTable() {
-            const tbody = document.getElementById('tableBody');
-            if (!tbody) return;
-            
-            tbody.innerHTML = '';
-
-            orders.forEach((order, index) => {
-                const row = document.createElement('tr');
-                row.innerHTML = `
-                    <td>${index + 1}</td>
-                    <td>${order.namaTeknisi}</td>
-                    <td>${order.tgl}</td>
-                    <td>${order.noCase}</td>
-                    <td>${order.type}</td>
-                    <td>${order.noSeri}</td>
-                    <td>${order.noPart}</td>
-                    <td>${order.namaItem}</td>
-                    <td>${order.jumlah}</td>
-                    <td>${order.kategoriProduk}</td>
-                    <td>${order.layanan}</td>
-                    <td>${order.namaKonsumen}</td>
-                    <td>${order.noTelp}</td>
-                    <td>${order.tglOrder || '-'}</td>
-                    <td>${order.noOrder || '-'}</td>
-                    <td>${order.keterangan || '-'}</td>
-                    <td><span class="status-badge status-${order.status.toLowerCase()}">${order.status === 'PROSES' ? 'PROSES PEMENUHAN' : order.status}</span></td>
-                `;
-                tbody.appendChild(row);
-            });
-        }
-
-        // Render table for Admin Sparepart page
-        function renderAdminTable() {
-            const tbody = document.getElementById('adminTableBody');
-            if (!tbody) return;
-            
-            tbody.innerHTML = '';
-
-            orders.forEach((order, index) => {
-                const row = document.createElement('tr');
-                row.innerHTML = `
-                    <td>${index + 1}</td>
-                    <td>${order.namaTeknisi}</td>
-                    <td>${order.tgl}</td>
-                    <td>${order.noCase}</td>
-                    <td>${order.type}</td>
-                    <td>${order.noSeri}</td>
-                    <td>${order.noPart}</td>
-                    <td>${order.namaItem}</td>
-                    <td>${order.jumlah}</td>
-                    <td>${order.kategoriProduk}</td>
-                    <td>${order.layanan}</td>
-                    <td>${order.namaKonsumen}</td>
-                    <td>${order.noTelp}</td>
-                    <td>${order.tglOrder || '-'}</td>
-                    <td>${order.noOrder || '-'}</td>
-                    <td>${order.keterangan || '-'}</td>
-                    <td><span class="status-badge status-${order.status.toLowerCase()}">${order.status === 'PROSES' ? 'PROSES PEMENUHAN' : order.status}</span></td>
-                    <td>
-                        <div class="action-buttons">
-                            <button class="action-btn edit" onclick="editOrderFromAdmin(${index})">
-                                <i class="fas fa-edit"></i>
-                            </button>
-                            <button class="action-btn delete" onclick="deleteOrder(${index})">
-                                <i class="fas fa-trash"></i>
-                            </button>
-                        </div>
-                    </td>
-                `;
-                tbody.appendChild(row);
-            });
-        }
-
-        // Render table for Teknisi page
-        function renderTeknisiTable() {
-            const tbody = document.getElementById('teknisiTableBody');
-            if (!tbody) return;
-            
-            tbody.innerHTML = '';
-
-            orders.forEach((order, index) => {
-                const row = document.createElement('tr');
-                row.innerHTML = `
-                    <td>${index + 1}</td>
-                    <td>${order.namaTeknisi}</td>
-                    <td>${order.tgl}</td>
-                    <td>${order.noCase}</td>
-                    <td>${order.type}</td>
-                    <td>${order.noSeri}</td>
-                    <td>${order.noPart}</td>
-                    <td>${order.namaItem}</td>
-                    <td>${order.jumlah}</td>
-                    <td>${order.kategoriProduk}</td>
-                    <td>${order.layanan}</td>
-                    <td>${order.namaKonsumen}</td>
-                    <td>${order.noTelp}</td>
-                    <td><span class="status-badge status-${order.status.toLowerCase()}">${order.status === 'PROSES' ? 'PROSES PEMENUHAN' : order.status}</span></td>
-                    <td>
-                        <div class="action-buttons">
-                            <button class="action-btn edit" onclick="editOrderFromTeknisi(${index})">
-                                <i class="fas fa-edit"></i>
-                            </button>
-                        </div>
-                    </td>
-                `;
-                tbody.appendChild(row);
-            });
-        }
-
-        // Render table for History page
-        function renderHistoryTable() {
-            const tbody = document.getElementById('historyTableBody');
-            if (!tbody) return;
-            
-            tbody.innerHTML = '';
-
-            const filteredOrders = getFilteredHistoryOrders();
-
-            filteredOrders.forEach((order, index) => {
-                // Calculate duration for completed orders
-                let duration = '-';
-                if (order.status === 'FINISH' && order.tglOrder && order.tglSelesai) {
-                    const start = new Date(order.tglOrder);
-                    const end = new Date(order.tglSelesai);
-                    const diffTime = Math.abs(end - start);
-                    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-                    duration = `${diffDays} hari`;
-                }
-                
-                const row = document.createElement('tr');
-                row.innerHTML = `
-                    <td>${index + 1}</td>
-                    <td>${order.tglOrder || '-'}</td>
-                    <td>${order.noOrder || '-'}</td>
-                    <td>${order.namaTeknisi}</td>
-                    <td>${order.noCase}</td>
-                    <td>${order.type}</td>
-                    <td>${order.namaItem}</td>
-                    <td>${order.jumlah}</td>
-                    <td>${order.namaKonsumen}</td>
-                    <td><span class="status-badge status-${order.status.toLowerCase()}">${order.status === 'PROSES' ? 'PROSES PEMENUHAN' : order.status}</span></td>
-                    <td>${order.tglSelesai || '-'}</td>
-                    <td>${duration}</td>
-                `;
-                tbody.appendChild(row);
-            });
-        }
-
-        // Download Excel function
-        function downloadExcel() {
-            if (orders.length === 0) {
-                showToast('Tidak ada data untuk diunduh', 'error');
-                return;
-            }
-
-            // Prepare data for Excel
-            const headers = [
-                'NO',
-                'NAMA TEKNISI',
-                'TGL',
-                'NO. CASE',
-                'TYPE',
-                'NO. SERI',
-                'NO. PART',
-                'NAMA ITEM',
-                'JUMLAH',
-                'KATEGORI PRODUK',
-                'LAYANAN',
-                'NAMA KONSUMEN',
-                'NO. TELP',
-                'TGL ORDER',
-                'NO. ORDER',
-                'KETERANGAN',
-                'STATUS'
-            ];
-
-            const excelData = [headers];
-            
-            orders.forEach((order, index) => {
-                excelData.push([
-                    index + 1,
-                    order.namaTeknisi,
-                    order.tgl,
-                    order.noCase,
-                    order.type,
-                    order.noSeri,
-                    order.noPart,
-                    order.namaItem,
-                    order.jumlah,
-                    order.kategoriProduk,
-                    order.layanan,
-                    order.namaKonsumen,
-                    order.noTelp,
-                    order.tglOrder || '',
-                    order.noOrder || '',
-                    order.keterangan || '',
-                    order.status === 'PROSES' ? 'PROSES PEMENUHAN' : order.status
-                ]);
-            });
-
-            // Create workbook
-            const wb = XLSX.utils.book_new();
-            const ws = XLSX.utils.aoa_to_sheet(excelData);
-
-            // Set column widths
-            const colWidths = [
-                { wch: 5 },   // NO
-                { wch: 15 },  // NAMA TEKNISI
-                { wch: 12 },  // TGL
-                { wch: 12 },  // NO. CASE
-                { wch: 15 },  // TYPE
-                { wch: 15 },  // NO. SERI
-                { wch: 12 },  // NO. PART
-                { wch: 20 },  // NAMA ITEM
-                { wch: 8 },   // JUMLAH
-                { wch: 15 },  // KATEGORI PRODUK
-                { wch: 15 },  // LAYANAN
-                { wch: 20 },  // NAMA KONSUMEN
-                { wch: 15 },  // NO. TELP
-                { wch: 12 },  // TGL ORDER
-                { wch: 12 },  // NO. ORDER
-                { wch: 30 },  // KETERANGAN
-                { wch: 15 }   // STATUS
-            ];
-            ws['!cols'] = colWidths;
-
-            // Add worksheet to workbook
-            XLSX.utils.book_append_sheet(wb, ws, "Data Order Sparepart");
-
-            // Generate filename with current date
-            const today = new Date().toISOString().split('T')[0];
-            const fileName = `Data_Order_Sparepart_${today}.xlsx`;
-
-            // Save the file
-            XLSX.writeFile(wb, fileName);
-            
-            showToast('Data berhasil diunduh dalam format Excel', 'success');
-        }
-
-        // Download Excel function for Teknisi page
-        function downloadTeknisiExcel() {
-            if (orders.length === 0) {
-                showToast('Tidak ada data untuk diunduh', 'error');
-                return;
-            }
-
-            // Prepare data for Excel
-            const headers = [
-                'NO',
-                'NAMA TEKNISI',
-                'TGL',
-                'NO. CASE',
-                'TYPE',
-                'NO. SERI',
-                'NO. PART',
-                'NAMA ITEM',
-                'JUMLAH',
-                'KATEGORI PRODUK',
-                'LAYANAN',
-                'NAMA KONSUMEN',
-                'NO. TELP',
-                'STATUS'
-            ];
-
-            const excelData = [headers];
-            
-            orders.forEach((order, index) => {
-                excelData.push([
-                    index + 1,
-                    order.namaTeknisi,
-                    order.tgl,
-                    order.noCase,
-                    order.type,
-                    order.noSeri,
-                    order.noPart,
-                    order.namaItem,
-                    order.jumlah,
-                    order.kategoriProduk,
-                    order.layanan,
-                    order.namaKonsumen,
-                    order.noTelp,
-                    order.status === 'PROSES' ? 'PROSES PEMENUHAN' : order.status
-                ]);
-            });
-
-            // Create workbook
-            const wb = XLSX.utils.book_new();
-            const ws = XLSX.utils.aoa_to_sheet(excelData);
-
-            // Set column widths
-            const colWidths = [
-                { wch: 5 },   // NO
-                { wch: 15 },  // NAMA TEKNISI
-                { wch: 12 },  // TGL
-                { wch: 12 },  // NO. CASE
-                { wch: 15 },  // TYPE
-                { wch: 15 },  // NO. SERI
-                { wch: 12 },  // NO. PART
-                { wch: 20 },  // NAMA ITEM
-                { wch: 8 },   // JUMLAH
-                { wch: 15 },  // KATEGORI PRODUK
-                { wch: 15 },  // LAYANAN
-                { wch: 20 },  // NAMA KONSUMEN
-                { wch: 15 },  // NO. TELP
-                { wch: 15 }   // STATUS
-            ];
-            ws['!cols'] = colWidths;
-
-            // Add worksheet to workbook
-            XLSX.utils.book_append_sheet(wb, ws, "Data Order Teknisi");
-
-            // Generate filename with current date
-            const today = new Date().toISOString().split('T')[0];
-            const fileName = `Data_Order_Teknisi_${today}.xlsx`;
-
-            // Save the file
-            XLSX.writeFile(wb, fileName);
-            
-            showToast('Data teknisi berhasil diunduh dalam format Excel', 'success');
-        }
-
-        // Download Excel function for History page
-        function downloadHistoryExcel() {
-            const filteredOrders = getFilteredHistoryOrders();
-            
-            if (filteredOrders.length === 0) {
-                showToast('Tidak ada data untuk diunduh', 'error');
-                return;
-            }
-
-            // Prepare data for Excel
-            const headers = [
-                'NO',
-                'TGL ORDER',
-                'NO. ORDER',
-                'TEKNISI',
-                'NO. CASE',
-                'TYPE',
-                'ITEM',
-                'JUMLAH',
-                'KONSUMEN',
-                'STATUS',
-                'TGL SELESAI',
-                'DURASI'
-            ];
-
-            const excelData = [headers];
-            
-            filteredOrders.forEach((order, index) => {
-                // Calculate duration for completed orders
-                let duration = '-';
-                if (order.status === 'FINISH' && order.tglOrder && order.tglSelesai) {
-                    const start = new Date(order.tglOrder);
-                    const end = new Date(order.tglSelesai);
-                    const diffTime = Math.abs(end - start);
-                    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-                    duration = `${diffDays} hari`;
-                }
-                
-                excelData.push([
-                    index + 1,
-                    order.tglOrder || '',
-                    order.noOrder || '',
-                    order.namaTeknisi,
-                    order.noCase,
-                    order.type,
-                    order.namaItem,
-                    order.jumlah,
-                    order.namaKonsumen,
-                    order.status === 'PROSES' ? 'PROSES PEMENUHAN' : order.status,
-                    order.tglSelesai || '',
-                    duration
-                ]);
-            });
-
-            // Create workbook
-            const wb = XLSX.utils.book_new();
-            const ws = XLSX.utils.aoa_to_sheet(excelData);
-
-            // Set column widths
-            const colWidths = [
-                { wch: 5 },   // NO
-                { wch: 12 },  // TGL ORDER
-                { wch: 12 },  // NO. ORDER
-                { wch: 15 },  // TEKNISI
-                { wch: 12 },  // NO. CASE
-                { wch: 15 },  // TYPE
-                { wch: 20 },  // ITEM
-                { wch: 8 },   // JUMLAH
-                { wch: 20 },  // KONSUMEN
-                { wch: 15 },  // STATUS
-                { wch: 12 },  // TGL SELESAI
-                { wch: 10 }   // DURASI
-            ];
-            ws['!cols'] = colWidths;
-
-            // Add worksheet to workbook
-            XLSX.utils.book_append_sheet(wb, ws, "History Order Sparepart");
-
-            // Generate filename with current date
-            const today = new Date().toISOString().split('T')[0];
-            const fileName = `History_Order_Sparepart_${today}.xlsx`;
-
-            // Save the file
-            XLSX.writeFile(wb, fileName);
-            
-            showToast('Data history berhasil diunduh dalam format Excel', 'success');
-        }
-
-        // Edit order from Admin Sparepart table
-        function editOrderFromAdmin(index) {
-            const order = orders[index];
-            editingIndex = index;
-
-            // Fill edit form
-            document.getElementById('editNamaTeknisi').value = order.namaTeknisi;
-            document.getElementById('editTgl').value = order.tgl;
-            document.getElementById('editNoCase').value = order.noCase;
-            document.getElementById('editType').value = order.type;
-            document.getElementById('editNoSeri').value = order.noSeri;
-            document.getElementById('editNoPart').value = order.noPart;
-            document.getElementById('editNamaItem').value = order.namaItem;
-            document.getElementById('editJumlah').value = order.jumlah;
-            document.getElementById('editKategoriProduk').value = order.kategoriProduk;
-            document.getElementById('editLayanan').value = order.layanan;
-            document.getElementById('editNamaKonsumen').value = order.namaKonsumen;
-            document.getElementById('editNoTelp').value = order.noTelp;
-            document.getElementById('editTglOrder').value = order.tglOrder || '';
-            document.getElementById('editNoOrder').value = order.noOrder || '';
-            document.getElementById('editKeterangan').value = order.keterangan || '';
-            document.getElementById('editStatus').value = order.status;
-
-            // Show all fields for admin
-            document.getElementById('editTglOrderGroup').classList.remove('hide-for-teknisi');
-            document.getElementById('editNoOrderGroup').classList.remove('hide-for-teknisi');
-            document.getElementById('editKeteranganGroup').classList.remove('hide-for-teknisi');
-
-            // Show edit modal
-            document.getElementById('editModal').classList.add('active');
-            showToast('Edit order', 'info');
-        }
-
-        // Edit order from Teknisi table
-        function editOrderFromTeknisi(index) {
-            const order = orders[index];
-            editingIndex = index;
-
-            // Fill edit form
-            document.getElementById('editNamaTeknisi').value = order.namaTeknisi;
-            document.getElementById('editTgl').value = order.tgl;
-            document.getElementById('editNoCase').value = order.noCase;
-            document.getElementById('editType').value = order.type;
-            document.getElementById('editNoSeri').value = order.noSeri;
-            document.getElementById('editNoPart').value = order.noPart;
-            document.getElementById('editNamaItem').value = order.namaItem;
-            document.getElementById('editJumlah').value = order.jumlah;
-            document.getElementById('editKategoriProduk').value = order.kategoriProduk;
-            document.getElementById('editLayanan').value = order.layanan;
-            document.getElementById('editNamaKonsumen').value = order.namaKonsumen;
-            document.getElementById('editNoTelp').value = order.noTelp;
-            document.getElementById('editTglOrder').value = order.tglOrder || '';
-            document.getElementById('editNoOrder').value = order.noOrder || '';
-            document.getElementById('editKeterangan').value = order.keterangan || '';
-            document.getElementById('editStatus').value = order.status;
-
-            // Hide TGL ORDER, NO. ORDER, and KETERANGAN fields for teknisi
-            document.getElementById('editTglOrderGroup').classList.add('hide-for-teknisi');
-            document.getElementById('editNoOrderGroup').classList.add('hide-for-teknisi');
-            document.getElementById('editKeteranganGroup').classList.add('hide-for-teknisi');
-
-            // Show edit modal
-            document.getElementById('editModal').classList.add('active');
-            showToast('Edit order teknisi', 'info');
-        }
-
-        // Close edit modal
-        function closeEditModal() {
-            document.getElementById('editModal').classList.remove('active');
-            editingIndex = -1;
-        }
-
-        // Delete order
-        function deleteOrder(index) {
-            deleteIndex = index;
-            document.getElementById('confirmModal').classList.add('active');
-        }
-
-        // Confirm delete
-        function confirmDelete() {
-            if (deleteIndex >= 0) {
-                orders.splice(deleteIndex, 1);
-                saveToLocalStorage(); // Save to localStorage
-                renderTable();
-                renderAdminTable();
-                renderTeknisiTable();
-                renderHistoryTable();
-                updateDashboardStats();
-                updateHistorySummary();
-                showToast('Order berhasil dihapus!', 'success');
-                closeModal();
-            }
-        }
-
-        // Close modal
-        function closeModal() {
-            document.getElementById('confirmModal').classList.remove('active');
-            deleteIndex = -1;
-        }
-
-        // Search functionality for Daftar Order
-        function handleSearch(e) {
-            const searchTerm = document.getElementById('searchInput').value.toLowerCase();
-            const statusFilter = document.getElementById('statusFilter').value;
-            const rows = document.querySelectorAll('#tableBody tr');
-
-            rows.forEach(row => {
-                const text = row.textContent.toLowerCase();
-                const status = row.querySelector('.status-badge').textContent;
-                
-                const matchesSearch = text.includes(searchTerm);
-                const matchesStatus = !statusFilter || status === statusFilter || 
-                                    (statusFilter === 'PROSES' && status === 'PROSES PEMENUHAN');
-                
-                row.style.display = (matchesSearch && matchesStatus) ? '' : 'none';
-            });
-        }
-
-        // Search functionality for Admin Sparepart
-        function handleAdminSearch(e) {
-            const searchTerm = document.getElementById('adminSearchInput').value.toLowerCase();
-            const statusFilter = document.getElementById('adminStatusFilter').value;
-            const rows = document.querySelectorAll('#adminTableBody tr');
-
-            rows.forEach(row => {
-                const text = row.textContent.toLowerCase();
-                const status = row.querySelector('.status-badge').textContent;
-                
-                const matchesSearch = text.includes(searchTerm);
-                const matchesStatus = !statusFilter || status === statusFilter || 
-                                    (statusFilter === 'PROSES' && status === 'PROSES PEMENUHAN');
-                
-                row.style.display = (matchesSearch && matchesStatus) ? '' : 'none';
-            });
-        }
-
-        // Search functionality for Teknisi page
-        function handleTeknisiSearch(e) {
-            const searchTerm = document.getElementById('teknisiSearchInput').value.toLowerCase();
-            const statusFilter = document.getElementById('teknisiStatusFilter').value;
-            const rows = document.querySelectorAll('#teknisiTableBody tr');
-
-            rows.forEach(row => {
-                const text = row.textContent.toLowerCase();
-                const status = row.querySelector('.status-badge').textContent;
-                
-                const matchesSearch = text.includes(searchTerm);
-                const matchesStatus = !statusFilter || status === statusFilter || 
-                                    (statusFilter === 'PROSES' && status === 'PROSES PEMENUHAN');
-                
-                row.style.display = (matchesSearch && matchesStatus) ? '' : 'none';
-            });
-        }
-
-        // Search functionality for History page
-        function handleHistorySearch(e) {
-            const searchTerm = document.getElementById('historySearchInput').value.toLowerCase();
-            const rows = document.querySelectorAll('#historyTableBody tr');
-
-            rows.forEach(row => {
-                const text = row.textContent.toLowerCase();
-                row.style.display = text.includes(searchTerm) ? '' : 'none';
-            });
-        }
-
-        // Show toast notification
-        function showToast(message, type = 'info') {
-            const toast = document.getElementById('toast');
-            toast.textContent = message;
-            toast.className = `toast ${type}`;
-            toast.classList.add('show');
-
-            setTimeout(() => {
-                toast.classList.remove('show');
-            }, 3000);
-        }
-
-        // Close modal when clicking outside
-        window.onclick = function(event) {
-            const editModal = document.getElementById('editModal');
-            const confirmModal = document.getElementById('confirmModal');
-            
-            if (event.target === editModal) {
-                closeEditModal();
-            }
-            if (event.target === confirmModal) {
-                closeModal();
-            }
-        }
-    </script>
+      }
+
+      currentMasterPage = 1;
+      renderMasterTable();
+    }
+
+    function prevMasterPage() {
+      if (currentMasterPage > 1) {
+        currentMasterPage--;
+        renderMasterTable();
+      }
+    }
+
+    function nextMasterPage() {
+      if (currentMasterPage * rowsPerPageMaster < filteredMaster.length) {
+        currentMasterPage++;
+        renderMasterTable();
+      }
+    }
+
+    function changeRowsPerPageMaster() {
+      rowsPerPageMaster = parseInt(document.getElementById("rowsPerPageMaster").value);
+      currentMasterPage = 1;
+      renderMasterTable();
+    }
+
+    // ---- STOCK KOMPONEN ----
+    let stockIndexMap = [];
+    let filteredStock = [];
+    let currentStockPage = 1;
+    let rowsPerPageStock = 15; // Diubah dari 20 menjadi 15
+
+    function importExcel() {
+      const file = document.getElementById('importFile').files[0];
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        const data = new Uint8Array(e.target.result);
+        const workbook = XLSX.read(data, {type: 'array'});
+        const sheet = workbook.Sheets[workbook.SheetNames[0]];
+        const json = XLSX.utils.sheet_to_json(sheet, {header:1});
+
+        const headers = ["No.","Tipe Lokasi","Nama","Part","Deskripsi Part","QTY","QTY Alloc","Available QTY","Return To Factory"];
+        const excelHeaders = json[0].map(h => h.toString().trim());
+        stockIndexMap = headers.map(h => excelHeaders.indexOf(h));
+
+        allData = json.slice(1).filter(r => r.length > 0);
+        
+        // Simpan ke localStorage
+        saveToLocalStorage('stockData', allData);
+        
+        filteredStock = allData;
+
+        updateFilterOptions(allData);
+        currentStockPage = 1;
+        renderTable();
+      };
+      reader.readAsArrayBuffer(file);
+    }
+
+    function renderTable() {
+      const tbody = document.getElementById("stockTable").querySelector("tbody");
+      tbody.innerHTML = "";
+
+      const start = (currentStockPage - 1) * rowsPerPageStock;
+      const end = start + rowsPerPageStock;
+      const pageData = filteredStock.slice(start, end);
+
+      pageData.forEach((row, i) => {
+        let newRow = tbody.insertRow();
+        
+        // Kolom No. (rata kiri)
+        let cellNo = newRow.insertCell();
+        cellNo.textContent = start + i + 1;
+        cellNo.className = "text-left";
+        
+        // Kolom Tipe Lokasi (rata kiri)
+        let cellTipe = newRow.insertCell();
+        cellTipe.textContent = row[stockIndexMap[1]] || "";
+        cellTipe.className = "text-left";
+        
+        // Kolom Nama (rata kiri)
+        let cellNama = newRow.insertCell();
+        cellNama.textContent = row[stockIndexMap[2]] || "";
+        cellNama.className = "text-left";
+        
+        // Kolom Part (rata kiri)
+        let cellPart = newRow.insertCell();
+        cellPart.textContent = row[stockIndexMap[3]] || "";
+        cellPart.className = "text-left";
+        
+        // Kolom Deskripsi Part (rata kiri)
+        let cellDesc = newRow.insertCell();
+        cellDesc.textContent = row[stockIndexMap[4]] || "";
+        cellDesc.className = "text-left";
+        
+        // Kolom QTY (rata kiri)
+        let cellQty = newRow.insertCell();
+        cellQty.textContent = row[stockIndexMap[5]] || "";
+        cellQty.className = "text-left";
+        
+        // Kolom QTY Alloc (rata kiri)
+        let cellAlloc = newRow.insertCell();
+        cellAlloc.textContent = row[stockIndexMap[6]] || "";
+        cellAlloc.className = "text-left";
+        
+        // Kolom Available QTY (rata kiri)
+        let cellAvailable = newRow.insertCell();
+        cellAvailable.textContent = row[stockIndexMap[7]] || "";
+        cellAvailable.className = "text-left";
+        
+        // Kolom Return To Factory (rata kiri)
+        let cellReturn = newRow.insertCell();
+        cellReturn.textContent = row[stockIndexMap[8]] || "";
+        cellReturn.className = "text-left";
+      });
+
+      document.getElementById("pageInfo").textContent =
+        `Halaman ${currentStockPage} dari ${Math.ceil(filteredStock.length / rowsPerPageStock)}`;
+
+      document.getElementById("prevBtn").disabled = currentStockPage === 1;
+      document.getElementById("nextBtn").disabled = end >= filteredStock.length;
+    }
+
+    function updateFilterOptions(data) {
+      const lokasiSet = new Set();
+      data.forEach(row => {
+        const val = row[stockIndexMap[1]];
+        if (val) lokasiSet.add(val);
+      });
+
+      const select = document.getElementById("filterLokasi");
+      select.innerHTML = '<option value="all">Semua</option>';
+      lokasiSet.forEach(l => {
+        let opt = document.createElement("option");
+        opt.value = l;
+        opt.textContent = l;
+        select.appendChild(opt);
+      });
+    }
+
+    function applyFilter() {
+      const filterVal = document.getElementById("filterLokasi").value;
+      const searchVal = document.getElementById("searchInput").value.toLowerCase();
+
+      filteredStock = allData;
+
+      if (filterVal !== "all") {
+        filteredStock = filteredStock.filter(r => r[stockIndexMap[1]] == filterVal);
+      }
+
+      if (searchVal) {
+        filteredStock = filteredStock.filter(r => {
+          return (
+            (r[stockIndexMap[2]] && r[stockIndexMap[2]].toString().toLowerCase().includes(searchVal)) ||
+            (r[stockIndexMap[3]] && r[stockIndexMap[3]].toString().toLowerCase().includes(searchVal)) ||
+            (r[stockIndexMap[4]] && r[stockIndexMap[4]].toString().toLowerCase().includes(searchVal))
+          );
+        });
+      }
+
+      currentStockPage = 1;
+      renderTable();
+    }
+
+    function prevPage() {
+      if (currentStockPage > 1) {
+        currentStockPage--;
+        renderTable();
+      }
+    }
+
+    function nextPage() {
+      if (currentStockPage * rowsPerPageStock < filteredStock.length) {
+        currentStockPage++;
+        renderTable();
+      }
+    }
+
+    function changeRowsPerPage() {
+      rowsPerPageStock = parseInt(document.getElementById("rowsPerPage").value);
+      currentStockPage = 1;
+      renderTable();
+    }
+
+    // ---- RESERVASI ----
+    let reservasiData = [];
+    let reservasiIndexMap = [];
+    let filteredReservasi = [];
+    let currentReservasiPage = 1;
+    let rowsPerPageReservasi = 15;
+
+    function importReservasiExcel() {
+      const file = document.getElementById('importReservasi').files[0];
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        const data = new Uint8Array(e.target.result);
+        const workbook = XLSX.read(data, {type: 'array'});
+        const sheet = workbook.Sheets[workbook.SheetNames[0]];
+        const json = XLSX.utils.sheet_to_json(sheet, {header:1});
+
+        const headers = ["Nomor","Catatan","Part","Qty Reservasi","Qty Transaksi","Qty Close","Part Demand","Serial Number","Return To Factory","Teknisi Perbaikan","Analisa SA","Disetujui Pada"];
+        const excelHeaders = json[0].map(h => h.toString().trim());
+        reservasiIndexMap = headers.map(h => excelHeaders.indexOf(h));
+
+        reservasiData = json.slice(1).filter(r => r.length > 0);
+        
+        // Simpan ke localStorage
+        saveToLocalStorage('reservasiData', reservasiData);
+        
+        filteredReservasi = reservasiData;
+        currentReservasiPage = 1;
+        
+        updateTeknisiFilter(reservasiData);
+        renderReservasiTable();
+      };
+      reader.readAsArrayBuffer(file);
+    }
+
+    function updateTeknisiFilter(data) {
+      const teknisiSet = new Set();
+      data.forEach(row => {
+        const val = row[reservasiIndexMap[9]]; // Teknisi Perbaikan
+        if (val) teknisiSet.add(val);
+      });
+
+      const select = document.getElementById("filterTeknisi");
+      select.innerHTML = '<option value="all">Semua</option>';
+      [...teknisiSet].sort().forEach(t => {
+        let opt = document.createElement("option");
+        opt.value = t;
+        opt.textContent = t;
+        select.appendChild(opt);
+      });
+    }
+
+    function renderReservasiTable() {
+      const tbody = document.getElementById("reservasiTable").querySelector("tbody");
+      tbody.innerHTML = "";
+
+      const start = (currentReservasiPage - 1) * rowsPerPageReservasi;
+      const end = start + rowsPerPageReservasi;
+      const pageData = filteredReservasi.slice(start, end);
+
+      pageData.forEach((row, i) => {
+        let newRow = tbody.insertRow();
+        
+        // Kolom Nomor (rata kiri)
+        let cellNomor = newRow.insertCell();
+        cellNomor.textContent = row[reservasiIndexMap[0]] || "";
+        cellNomor.className = "text-left";
+        
+        // Kolom Catatan (rata kiri)
+        let cellCatatan = newRow.insertCell();
+        cellCatatan.textContent = row[reservasiIndexMap[1]] || "";
+        cellCatatan.className = "text-left";
+        
+        // Kolom Part (rata kiri)
+        let cellPart = newRow.insertCell();
+        cellPart.textContent = row[reservasiIndexMap[2]] || "";
+        cellPart.className = "text-left";
+        
+        // Kolom Qty Reservasi (rata kiri)
+        let cellQtyReservasi = newRow.insertCell();
+        cellQtyReservasi.textContent = row[reservasiIndexMap[3]] || "";
+        cellQtyReservasi.className = "text-left";
+        
+        // Kolom Qty Transaksi (rata kiri)
+        let cellQtyTransaksi = newRow.insertCell();
+        cellQtyTransaksi.textContent = row[reservasiIndexMap[4]] || "";
+        cellQtyTransaksi.className = "text-left";
+        
+        // Kolom Qty Close (rata kiri)
+        let cellQtyClose = newRow.insertCell();
+        cellQtyClose.textContent = row[reservasiIndexMap[5]] || "";
+        cellQtyClose.className = "text-left";
+        
+        // Kolom Part Demand (rata kiri)
+        let cellPartDemand = newRow.insertCell();
+        cellPartDemand.textContent = row[reservasiIndexMap[6]] || "";
+        cellPartDemand.className = "text-left";
+        
+        // Kolom Serial Number (rata kiri)
+        let cellSerial = newRow.insertCell();
+        cellSerial.textContent = row[reservasiIndexMap[7]] || "";
+        cellSerial.className = "text-left";
+        
+        // Kolom Return To Factory (rata kiri)
+        let cellReturn = newRow.insertCell();
+        cellReturn.textContent = row[reservasiIndexMap[8]] || "";
+        cellReturn.className = "text-left";
+        
+        // Kolom Teknisi Perbaikan (rata kiri)
+        let cellTeknisi = newRow.insertCell();
+        cellTeknisi.textContent = row[reservasiIndexMap[9]] || "";
+        cellTeknisi.className = "text-left";
+        
+        // Kolom Analisa SA (rata kiri)
+        let cellAnalisa = newRow.insertCell();
+        cellAnalisa.textContent = row[reservasiIndexMap[10]] || "";
+        cellAnalisa.className = "text-left";
+        
+        // Kolom Disetujui Pada (rata kiri) dengan format tanggal
+        let cellDisetujui = newRow.insertCell();
+        const tanggalValue = row[reservasiIndexMap[11]] || "";
+        cellDisetujui.textContent = formatDateTime(tanggalValue);
+        cellDisetujui.className = "text-left";
+      });
+
+      document.getElementById("pageInfoReservasi").textContent =
+        `Halaman ${currentReservasiPage} dari ${Math.ceil(filteredReservasi.length / rowsPerPageReservasi)}`;
+
+      document.getElementById("prevReservasi").disabled = currentReservasiPage === 1;
+      document.getElementById("nextReservasi").disabled = end >= filteredReservasi.length;
+    }
+
+    function applyReservasiFilter() {
+      const searchVal = document.getElementById("searchReservasi").value.toLowerCase();
+      const filterTeknisi = document.getElementById("filterTeknisi").value;
+
+      filteredReservasi = reservasiData;
+
+      // Filter berdasarkan Teknisi Perbaikan
+      if (filterTeknisi !== "all") {
+        filteredReservasi = filteredReservasi.filter(r => {
+          const teknisi = r[reservasiIndexMap[9]] || "";
+          return teknisi === filterTeknisi;
+        });
+      }
+
+      // Filter berdasarkan pencarian
+      if (searchVal) {
+        filteredReservasi = filteredReservasi.filter(r => {
+          return (
+            (r[reservasiIndexMap[0]] && r[reservasiIndexMap[0]].toString().toLowerCase().includes(searchVal)) ||
+            (r[reservasiIndexMap[1]] && r[reservasiIndexMap[1]].toString().toLowerCase().includes(searchVal)) ||
+            (r[reservasiIndexMap[2]] && r[reservasiIndexMap[2]].toString().toLowerCase().includes(searchVal))
+          );
+        });
+      }
+
+      currentReservasiPage = 1;
+      renderReservasiTable();
+    }
+
+    function prevReservasiPage() {
+      if (currentReservasiPage > 1) {
+        currentReservasiPage--;
+        renderReservasiTable();
+      }
+    }
+
+    function nextReservasiPage() {
+      if (currentReservasiPage * rowsPerPageReservasi < filteredReservasi.length) {
+        currentReservasiPage++;
+        renderReservasiTable();
+      }
+    }
+
+    function changeRowsPerPageReservasi() {
+      rowsPerPageReservasi = parseInt(document.getElementById("rowsPerPageReservasi").value);
+      currentReservasiPage = 1;
+      renderReservasiTable();
+    }
+
+    // ---- SERVICE CALLS ----
+    let serviceData = [];
+    let serviceIndexMap = [];
+    let filteredService = [];
+    let currentServicePage = 1;
+    let rowsPerPageService = 15;
+
+    function importServiceExcel() {
+      const file = document.getElementById('importService').files[0];
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        const data = new Uint8Array(e.target.result);
+        const workbook = XLSX.read(data, {type: 'array'});
+        const sheet = workbook.Sheets[workbook.SheetNames[0]];
+        const json = XLSX.utils.sheet_to_json(sheet, {header:1});
+
+        const headers = ["Tanggal Pendaftaran","Nomor Service Call","Jenis Layanan","Jenis Garansi","Tipe Demand","Nomor Seri","Nama Pemilik","Alamat Pemilik","Nama Teknisi","Tanggal Serah Terima"];
+        const excelHeaders = json[0].map(h => h.toString().trim());
+        serviceIndexMap = headers.map(h => excelHeaders.indexOf(h));
+
+        serviceData = json.slice(1).filter(r => r.length > 0);
+        
+        // Simpan ke localStorage
+        saveToLocalStorage('serviceData', serviceData);
+        
+        filteredService = serviceData;
+        currentServicePage = 1;
+        
+        updateJenisLayananFilter(serviceData);
+        renderServiceTable();
+      };
+      reader.readAsArrayBuffer(file);
+    }
+
+    function updateJenisLayananFilter(data) {
+      const jenisLayananSet = new Set();
+      data.forEach(row => {
+        const val = row[serviceIndexMap[2]]; // Jenis Layanan
+        if (val) jenisLayananSet.add(val);
+      });
+
+      const select = document.getElementById("filterJenisLayanan");
+      select.innerHTML = '<option value="all">Semua</option>';
+      [...jenisLayananSet].sort().forEach(j => {
+        let opt = document.createElement("option");
+        opt.value = j;
+        opt.textContent = j;
+        select.appendChild(opt);
+      });
+    }
+
+    function renderServiceTable() {
+      const tbody = document.getElementById("serviceTable").querySelector("tbody");
+      tbody.innerHTML = "";
+
+      const start = (currentServicePage - 1) * rowsPerPageService;
+      const end = start + rowsPerPageService;
+      const pageData = filteredService.slice(start, end);
+
+      pageData.forEach((row, i) => {
+        let newRow = tbody.insertRow();
+        
+        // Kolom Tanggal Pendaftaran (rata kiri) dengan format tanggal saja
+        let cellTanggalDaftar = newRow.insertCell();
+        const tanggalDaftarValue = row[serviceIndexMap[0]] || "";
+        cellTanggalDaftar.textContent = formatDateOnly(tanggalDaftarValue);
+        cellTanggalDaftar.className = "text-left";
+        
+        // Kolom Nomor Service Call (rata kiri)
+        let cellNomorService = newRow.insertCell();
+        cellNomorService.textContent = row[serviceIndexMap[1]] || "";
+        cellNomorService.className = "text-left";
+        
+        // Kolom Jenis Layanan (rata kiri)
+        let cellJenisLayanan = newRow.insertCell();
+        cellJenisLayanan.textContent = row[serviceIndexMap[2]] || "";
+        cellJenisLayanan.className = "text-left";
+        
+        // Kolom Jenis Garansi (rata kiri)
+        let cellJenisGaransi = newRow.insertCell();
+        cellJenisGaransi.textContent = row[serviceIndexMap[3]] || "";
+        cellJenisGaransi.className = "text-left";
+        
+        // Kolom Tipe Demand (rata kiri)
+        let cellTipeDemand = newRow.insertCell();
+        cellTipeDemand.textContent = row[serviceIndexMap[4]] || "";
+        cellTipeDemand.className = "text-left";
+        
+        // Kolom Nomor Seri (rata kiri)
+        let cellNomorSeri = newRow.insertCell();
+        cellNomorSeri.textContent = row[serviceIndexMap[5]] || "";
+        cellNomorSeri.className = "text-left";
+        
+        // Kolom Nama Pemilik (rata kiri)
+        let cellNamaPemilik = newRow.insertCell();
+        cellNamaPemilik.textContent = row[serviceIndexMap[6]] || "";
+        cellNamaPemilik.className = "text-left";
+        
+        // Kolom Alamat Pemilik (rata kiri)
+        let cellAlamatPemilik = newRow.insertCell();
+        cellAlamatPemilik.textContent = row[serviceIndexMap[7]] || "";
+        cellAlamatPemilik.className = "text-left";
+        
+        // Kolom Nama Teknisi (rata kiri)
+        let cellNamaTeknisi = newRow.insertCell();
+        cellNamaTeknisi.textContent = row[serviceIndexMap[8]] || "";
+        cellNamaTeknisi.className = "text-left";
+        
+        // Kolom Tanggal Serah Terima (rata kiri) dengan format tanggal
+        let cellTanggalSerah = newRow.insertCell();
+        const tanggalSerahValue = row[serviceIndexMap[9]] || "";
+        cellTanggalSerah.textContent = formatDateTime(tanggalSerahValue);
+        cellTanggalSerah.className = "text-left";
+      });
+
+      document.getElementById("pageInfoService").textContent =
+        `Halaman ${currentServicePage} dari ${Math.ceil(filteredService.length / rowsPerPageService)}`;
+
+      document.getElementById("prevService").disabled = currentServicePage === 1;
+      document.getElementById("nextService").disabled = end >= filteredService.length;
+    }
+
+    function applyServiceFilter() {
+      const searchVal = document.getElementById("searchService").value.toLowerCase();
+      const filterJenisLayanan = document.getElementById("filterJenisLayanan").value;
+
+      filteredService = serviceData;
+
+      // Filter berdasarkan Jenis Layanan
+      if (filterJenisLayanan !== "all") {
+        filteredService = filteredService.filter(r => {
+          const jenisLayanan = r[serviceIndexMap[2]] || "";
+          return jenisLayanan === filterJenisLayanan;
+        });
+      }
+
+      // Filter berdasarkan pencarian
+      if (searchVal) {
+        filteredService = filteredService.filter(r => {
+          return (
+            (r[serviceIndexMap[1]] && r[serviceIndexMap[1]].toString().toLowerCase().includes(searchVal)) ||
+            (r[serviceIndexMap[6]] && r[serviceIndexMap[6]].toString().toLowerCase().includes(searchVal))
+          );
+        });
+      }
+
+      currentServicePage = 1;
+      renderServiceTable();
+    }
+
+    function prevServicePage() {
+      if (currentServicePage > 1) {
+        currentServicePage--;
+        renderServiceTable();
+      }
+    }
+
+    function nextServicePage() {
+      if (currentServicePage * rowsPerPageService < filteredService.length) {
+        currentServicePage++;
+        renderServiceTable();
+      }
+    }
+
+    function changeRowsPerPageService() {
+      rowsPerPageService = parseInt(document.getElementById("rowsPerPageService").value);
+      currentServicePage = 1;
+      renderServiceTable();
+    }
+
+    // load data dari localStorage saat halaman dimuat
+    window.onload = function() {
+      // Load logo
+      const savedLogo = localStorage.getItem("dashboardLogo");
+      if (savedLogo) document.getElementById("logo").src = savedLogo;
+      
+      // Load data dari localStorage
+      masterData = loadFromLocalStorage('masterData');
+      filteredMaster = masterData;
+      updatePartFilter(masterData);
+      renderMasterTable();
+      
+      allData = loadFromLocalStorage('stockData');
+      filteredStock = allData;
+      updateFilterOptions(allData);
+      renderTable();
+      
+      reservasiData = loadFromLocalStorage('reservasiData');
+      filteredReservasi = reservasiData;
+      updateTeknisiFilter(reservasiData);
+      renderReservasiTable();
+      
+      serviceData = loadFromLocalStorage('serviceData');
+      filteredService = serviceData;
+      updateJenisLayananFilter(serviceData);
+      renderServiceTable();
+    };
+  </script>
 </body>
 </html>
